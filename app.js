@@ -9,8 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const state = {
     brainScore: 0,
     clownScore: 0,
+    pointsScore: 0,
     streak: 0,
     bestStreak: 0,
+    roundsPlayed: 0,
     
     // Config options
     mode: 'network',
@@ -34,8 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
     maxTime: 15, // seconds (standard)
     startTime: 0,
     answered: false,
-    hoveredNodeId: null
+    hoveredNodeId: null,
+    runSubmitted: false
   };
+
+  // Holds a finished run captured before sign-in, replayed once a profile exists.
+  let pendingRun = null;
 
   // Lucide icon names cycled as premise bullet markers
   const premiseIcons = ['terminal', 'cpu', 'database', 'zap', 'git-commit-horizontal', 'radio', 'wrench', 'key-round'];
@@ -50,10 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const els = {
     // Header
+    scorePoints: document.getElementById('score-points-val'),
     scoreBrain: document.getElementById('score-brain-val'),
     scoreClown: document.getElementById('score-clown-val'),
     scoreStreak: document.getElementById('score-streak-val'),
     btnOpenSettings: document.getElementById('btn-open-settings'),
+    btnOpenLeaderboard: document.getElementById('btn-open-leaderboard'),
+    btnAccount: document.getElementById('btn-account'),
+    accountAvatar: document.getElementById('account-avatar'),
+    accountName: document.getElementById('account-name'),
+    scorePopup: document.getElementById('score-popup'),
 
     // Screens
     screenStart: document.getElementById('screen-start'),
@@ -79,9 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verdict Screen Elements
     verdictTitle: document.getElementById('verdict-title'),
     verdictEfficiency: document.getElementById('verdict-efficiency'),
+    verdictPoints: document.getElementById('verdict-points'),
+    verdictRank: document.getElementById('verdict-rank'),
+    verdictRankText: document.getElementById('verdict-rank-text'),
     verdictQuote: document.getElementById('verdict-quote'),
+    btnViewBoard: document.getElementById('btn-view-board'),
     btnRecover: document.getElementById('btn-recover'),
     btnGiveUp: document.getElementById('btn-giveup'),
+    btnHeroLeaderboard: document.getElementById('btn-hero-leaderboard'),
 
     // Sidebar Drawer Controls
     settingsDrawer: document.getElementById('settings-drawer'),
@@ -102,7 +119,38 @@ document.addEventListener('DOMContentLoaded', () => {
     btnEndSession: document.getElementById('btn-end-session'),
     reviewStatus: document.getElementById('review-status'),
     reviewStatusTitle: document.getElementById('review-status-title'),
-    reviewStatusDetail: document.getElementById('review-status-detail')
+    reviewStatusDetail: document.getElementById('review-status-detail'),
+
+    // Leaderboard overlay
+    leaderboardOverlay: document.getElementById('leaderboard-overlay'),
+    btnCloseLeaderboard: document.getElementById('btn-close-leaderboard'),
+    lbList: document.getElementById('lb-list'),
+    lbEmpty: document.getElementById('lb-empty'),
+    lbLive: document.getElementById('lb-live'),
+    lbYou: document.getElementById('lb-you'),
+    lbSubtitle: document.getElementById('lb-subtitle'),
+    lbTabs: Array.from(document.querySelectorAll('.lb-tab')),
+
+    // Auth modal
+    authOverlay: document.getElementById('auth-overlay'),
+    btnCloseAuth: document.getElementById('btn-close-auth'),
+    authStepSignin: document.getElementById('auth-step-signin'),
+    authStepUsername: document.getElementById('auth-step-username'),
+    authStepAccount: document.getElementById('auth-step-account'),
+    btnSigninGoogle: document.getElementById('btn-signin-google'),
+    btnSigninGuest: document.getElementById('btn-signin-guest'),
+    authSigninError: document.getElementById('auth-signin-error'),
+    authUsernameInput: document.getElementById('auth-username-input'),
+    btnConfirmUsername: document.getElementById('btn-confirm-username'),
+    authUsernameError: document.getElementById('auth-username-error'),
+    accountStepAvatar: document.getElementById('account-step-avatar'),
+    accountStepName: document.getElementById('account-step-name'),
+    accountStepMeta: document.getElementById('account-step-meta'),
+    accountBest: document.getElementById('account-best'),
+    accountRank: document.getElementById('account-rank'),
+    accountRuns: document.getElementById('account-runs'),
+    btnRename: document.getElementById('btn-rename'),
+    btnSignout: document.getElementById('btn-signout')
   };
 
   // Sound Synthesizer (Web Audio API)
@@ -194,6 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
     syncUIFromState();
     updateScoreHUD();
     renderIcons();
+    // Boot the leaderboard / auth layer (safe if Supabase is unreachable).
+    if (window.Leaderboard && typeof lbUI !== 'undefined') {
+      lbUI.start().catch(err => console.warn('Leaderboard start failed', err));
+    }
   }
 
   function setupEventListeners() {
@@ -216,11 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveSettings();
 
       // Fresh session: reset score and streak
-      state.brainScore = 0;
-      state.clownScore = 0;
-      state.streak = 0;
-      state.bestStreak = 0;
-      updateScoreHUD();
+      resetSession();
 
       els.screenStart.style.display = 'none';
       els.screenVerdict.style.display = 'none';
@@ -278,11 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verdict screen: start a fresh session (reset score) and play again
     els.btnRecover.addEventListener('click', () => {
       sound.click();
-      state.brainScore = 0;
-      state.clownScore = 0;
-      state.streak = 0;
-      state.bestStreak = 0;
-      updateScoreHUD();
+      resetSession();
       els.screenVerdict.style.display = 'none';
       els.screenGame.style.display = 'flex';
       startNewRound();
@@ -291,11 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
     els.btnGiveUp.addEventListener('click', () => {
       sound.click();
       // Hard reset back to the landing page
-      state.brainScore = 0;
-      state.clownScore = 0;
-      state.streak = 0;
-      state.bestStreak = 0;
-      updateScoreHUD();
+      resetSession();
       
       els.screenVerdict.style.display = 'none';
       els.screenGame.style.display = 'none';
@@ -474,7 +514,19 @@ document.addEventListener('DOMContentLoaded', () => {
     syncUIFromState();
   }
 
+  function resetSession() {
+    state.brainScore = 0;
+    state.clownScore = 0;
+    state.pointsScore = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.roundsPlayed = 0;
+    state.runSubmitted = false;
+    updateScoreHUD();
+  }
+
   function updateScoreHUD() {
+    if (els.scorePoints) els.scorePoints.textContent = `${state.pointsScore}`;
     els.scoreBrain.textContent = `${state.brainScore}`;
     els.scoreClown.textContent = `${state.clownScore}`;
     if (els.scoreStreak) els.scoreStreak.textContent = `${state.streak}`;
@@ -662,18 +714,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const isCorrect = userChoice === state.currentPuzzle.correctAnswer;
+    state.roundsPlayed++;
 
     if (isCorrect) {
       state.brainScore++;
       state.streak++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+
+      // Award points through the balanced scoring engine.
+      const breakdown = Scoring.breakdown({
+        correct: true,
+        timeRemaining: state.timeRemaining,
+        maxTime: state.maxTime,
+        premises: currentPremiseCount(),
+        streakAfter: state.streak,
+        modifiers: state.modifiers
+      });
+      state.pointsScore += breakdown.total;
       updateScoreHUD();
+      showScorePopup(breakdown);
       sound.correct();
       revealReviewOverlay('correct');
     } else {
       state.clownScore++;
       state.streak = 0;
       updateScoreHUD();
+      showScorePopup(null);
       sound.wrong();
       revealReviewOverlay('wrong');
     }
@@ -682,12 +748,44 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleTimeoutFail() {
     if (state.answered) return;
     state.answered = true;
+    state.roundsPlayed++;
     state.clownScore++;
     state.streak = 0;
     updateScoreHUD();
+    showScorePopup(null);
     sound.wrong();
 
     revealReviewOverlay('timeout');
+  }
+
+  // How many premises are actually in the current puzzle (drives difficulty).
+  function currentPremiseCount() {
+    return (state.currentPuzzle && state.currentPuzzle.premises)
+      ? state.currentPuzzle.premises.length
+      : state.numPremises;
+  }
+
+  // Floating "+340" popup with multiplier breakdown on the game screen.
+  function showScorePopup(breakdown) {
+    const el = els.scorePopup;
+    if (!el) return;
+    el.classList.remove('show', 'miss');
+    // Force reflow so the animation restarts on rapid consecutive rounds.
+    void el.offsetWidth;
+
+    if (breakdown && breakdown.total > 0) {
+      const mults = [];
+      if (breakdown.streakMult > 1.001) mults.push(`×${breakdown.streakMult.toFixed(1)} streak`);
+      if (breakdown.chaosMult > 1.001) mults.push(`×${breakdown.chaosMult.toFixed(1)} chaos`);
+      if (breakdown.difficultyMult > 1.001) mults.push(`×${breakdown.difficultyMult.toFixed(2)} diff`);
+      el.innerHTML = `<span class="sp-points">+${breakdown.total}</span>` +
+        `<span class="sp-mults">${mults.join('  ')}</span>`;
+    } else {
+      el.classList.add('miss');
+      el.innerHTML = `<span class="sp-points">+0</span>` +
+        `<span class="sp-mults">streak reset</span>`;
+    }
+    el.classList.add('show');
   }
 
   // Human-readable statement of the actual correct answer for this puzzle.
@@ -772,8 +870,397 @@ document.addEventListener('DOMContentLoaded', () => {
     els.verdictTitle.innerHTML = `FINAL VERDICT: ${verdict} <i data-lucide="${verdictIcon}"></i>`;
     els.verdictQuote.textContent =
       `${quote}  —  ${state.brainScore} correct / ${state.clownScore} wrong · best streak ${state.bestStreak}`;
+
+    // Total points scored this session
+    if (els.verdictPoints) els.verdictPoints.textContent = `${state.pointsScore}`;
+
     renderIcons();
+
+    // Push the run to the global leaderboard (best-effort, non-blocking).
+    submitSessionToLeaderboard();
   }
+
+  // Send the finished session to Supabase and show the resulting global rank.
+  async function submitSessionToLeaderboard() {
+    const rankEl = els.verdictRank;
+    const textEl = els.verdictRankText;
+    if (!rankEl) return;
+
+    // Nothing meaningful to submit, or already submitted this session.
+    if (state.pointsScore <= 0 || state.runSubmitted) {
+      rankEl.style.display = 'none';
+      return;
+    }
+
+    if (!window.Leaderboard || !Leaderboard.isOnline()) {
+      rankEl.style.display = 'none';
+      return;
+    }
+
+    const total = state.brainScore + state.clownScore;
+    const run = {
+      score: state.pointsScore,
+      accuracy: Scoring.accuracy(state.brainScore, state.clownScore),
+      bestStreak: state.bestStreak,
+      rounds: state.roundsPlayed || total,
+      correct: state.brainScore,
+      wrong: state.clownScore,
+      mode: state.mode,
+      maxPremises: state.numPremises,
+      modifiers: state.modifiers
+    };
+
+    // Not signed in yet → offer to join the board.
+    if (!Leaderboard.isSignedIn() || Leaderboard.needsUsername()) {
+      rankEl.style.display = 'inline-flex';
+      textEl.innerHTML = `Sign in to bank <span class="hl">${state.pointsScore}</span> points on the board`;
+      rankEl.style.cursor = 'pointer';
+      rankEl.onclick = () => { pendingRun = run; openAuth(); };
+      return;
+    }
+
+    rankEl.style.display = 'inline-flex';
+    rankEl.style.cursor = 'default';
+    rankEl.onclick = null;
+    textEl.textContent = 'Submitting to leaderboard…';
+
+    try {
+      const result = await Leaderboard.submitRun(run);
+      state.runSubmitted = true;
+      if (result) {
+        const isBest = state.pointsScore >= (result.best_score || 0);
+        textEl.innerHTML = isBest
+          ? `New personal best! Global rank <span class="hl">#${result.rank}</span>`
+          : `Banked. Your best still ranks <span class="hl">#${result.rank}</span>`;
+      } else {
+        textEl.textContent = 'Could not reach the leaderboard.';
+      }
+    } catch (err) {
+      console.warn('submitSessionToLeaderboard', err);
+      textEl.textContent = 'Could not reach the leaderboard.';
+    }
+  }
+
+  // ============================================================
+  //  AUTH + LEADERBOARD UI CONTROLLER
+  // ============================================================
+  const lbUI = (() => {
+    let currentScope = 'all';
+    let cachedRows = [];
+    let unsubscribeLive = null;
+    let usernameMode = 'claim'; // 'claim' (first time) or 'rename'
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    // ---- Header account chip reflects current auth state.
+    function refreshAccountChip() {
+      const profile = Leaderboard.getProfile && Leaderboard.getProfile();
+      const signedIn = Leaderboard.isSignedIn && Leaderboard.isSignedIn();
+      if (!Leaderboard.isOnline()) {
+        els.accountName.textContent = 'OFFLINE';
+        els.accountAvatar.innerHTML = '<i data-lucide="wifi-off"></i>';
+      } else if (signedIn && profile) {
+        els.accountName.textContent = profile.username;
+        const meta = (Leaderboard.getSession().user || {}).user_metadata || {};
+        const avatar = profile.avatar_url || meta.avatar_url || meta.picture;
+        els.accountAvatar.innerHTML = avatar
+          ? `<img src="${escapeHtml(avatar)}" alt="">`
+          : '<i data-lucide="user-round-check"></i>';
+      } else if (signedIn && !profile) {
+        els.accountName.textContent = 'PICK NAME';
+        els.accountAvatar.innerHTML = '<i data-lucide="user-round-cog"></i>';
+      } else {
+        els.accountName.textContent = 'SIGN IN';
+        els.accountAvatar.innerHTML = '<i data-lucide="user-round"></i>';
+      }
+      renderIcons();
+    }
+
+    // ---- Auth modal step switching.
+    function showAuthStep(step) {
+      els.authStepSignin.style.display = step === 'signin' ? 'block' : 'none';
+      els.authStepUsername.style.display = step === 'username' ? 'block' : 'none';
+      els.authStepAccount.style.display = step === 'account' ? 'block' : 'none';
+    }
+
+    function openAuth() {
+      if (!Leaderboard.isOnline()) {
+        // Offline: nothing to sign into.
+        return;
+      }
+      els.authSigninError.textContent = '';
+      els.authUsernameError.textContent = '';
+
+      const signedIn = Leaderboard.isSignedIn();
+      const profile = Leaderboard.getProfile();
+
+      if (signedIn && profile) {
+        renderAccountStep();
+        showAuthStep('account');
+      } else if (signedIn && !profile) {
+        prepUsernameStep();
+        showAuthStep('username');
+      } else {
+        showAuthStep('signin');
+      }
+      els.authOverlay.style.display = 'flex';
+      renderIcons();
+    }
+
+    function closeAuth() {
+      els.authOverlay.style.display = 'none';
+    }
+
+    function prepUsernameStep() {
+      usernameMode = Leaderboard.getProfile() ? 'rename' : 'claim';
+      els.authUsernameInput.value = usernameMode === 'rename'
+        ? Leaderboard.getProfile().username
+        : Leaderboard.suggestedUsername();
+      els.authUsernameError.textContent = '';
+      setTimeout(() => els.authUsernameInput.focus(), 50);
+    }
+
+    async function renderAccountStep() {
+      const profile = Leaderboard.getProfile();
+      if (!profile) return;
+      els.accountStepName.textContent = profile.username;
+      const meta = (Leaderboard.getSession().user || {}).user_metadata || {};
+      const avatar = profile.avatar_url || meta.avatar_url || meta.picture;
+      els.accountStepAvatar.innerHTML = avatar
+        ? `<img src="${escapeHtml(avatar)}" alt="">`
+        : '<i data-lucide="user-round-check"></i>';
+      els.accountStepMeta.textContent = profile.is_guest ? 'Guest account' : 'Signed in with Google';
+      els.accountBest.textContent = `${profile.best_score || 0}`;
+      els.accountRuns.textContent = `${profile.total_runs || 0}`;
+      els.accountRank.textContent = '…';
+      renderIcons();
+
+      // Resolve the player's live global rank from the board.
+      const rows = await Leaderboard.fetchTop(100);
+      const mine = rows.find(r => r.user_id === profile.user_id);
+      els.accountRank.textContent = mine ? `#${mine.rank}` : '—';
+    }
+
+    // ---- Sign-in handlers.
+    async function doGoogle() {
+      els.authSigninError.textContent = '';
+      try {
+        await Leaderboard.signInWithGoogle(); // redirects away
+      } catch (err) {
+        els.authSigninError.textContent = 'Google sign-in is unavailable right now.';
+      }
+    }
+
+    async function doGuest() {
+      els.authSigninError.textContent = '';
+      els.btnSigninGuest.disabled = true;
+      try {
+        await Leaderboard.signInAsGuest();
+        prepUsernameStep();
+        showAuthStep('username');
+      } catch (err) {
+        els.authSigninError.textContent = 'Could not start a guest session.';
+      } finally {
+        els.btnSigninGuest.disabled = false;
+      }
+    }
+
+    async function confirmUsername() {
+      const name = els.authUsernameInput.value.trim();
+      els.authUsernameError.textContent = '';
+      if (name.length < 2 || name.length > 24) {
+        els.authUsernameError.textContent = 'Use 2–24 characters.';
+        return;
+      }
+      els.btnConfirmUsername.disabled = true;
+      try {
+        await Leaderboard.setUsername(name);
+        refreshAccountChip();
+        // If a finished run was waiting on a username, submit it now.
+        if (pendingRun) {
+          const run = pendingRun;
+          pendingRun = null;
+          const result = await Leaderboard.submitRun(run);
+          state.runSubmitted = true;
+          if (result && els.verdictRank && els.screenVerdict.style.display === 'flex') {
+            els.verdictRank.style.cursor = 'default';
+            els.verdictRank.onclick = null;
+            els.verdictRankText.innerHTML = `Banked! Global rank <span class="hl">#${result.rank}</span>`;
+            renderIcons();
+          }
+        }
+        renderAccountStep();
+        showAuthStep('account');
+      } catch (err) {
+        const code = (err && err.message) || '';
+        if (code === 'USERNAME_TAKEN') {
+          els.authUsernameError.textContent = 'That callsign is taken — try another.';
+        } else if (code === 'BAD_USERNAME') {
+          els.authUsernameError.textContent = 'Use 2–24 characters.';
+        } else {
+          els.authUsernameError.textContent = 'Could not save that name.';
+        }
+      } finally {
+        els.btnConfirmUsername.disabled = false;
+      }
+    }
+
+    async function doSignout() {
+      await Leaderboard.signOut();
+      refreshAccountChip();
+      closeAuth();
+    }
+
+    // ---- Leaderboard overlay.
+    async function openBoard() {
+      els.leaderboardOverlay.style.display = 'flex';
+      renderIcons();
+      if (!Leaderboard.isOnline()) {
+        els.lbLive.classList.add('offline');
+        els.lbList.innerHTML = '';
+        els.lbEmpty.style.display = 'block';
+        els.lbEmpty.textContent = 'Leaderboard is offline. Check your connection and reload.';
+        return;
+      }
+      els.lbEmpty.style.display = 'block';
+      els.lbEmpty.textContent = 'Loading the network…';
+      cachedRows = await Leaderboard.fetchTop(100);
+      renderBoard();
+
+      // Subscribe to live updates while the board is open.
+      if (!unsubscribeLive) {
+        unsubscribeLive = Leaderboard.subscribeLive(rows => {
+          cachedRows = rows;
+          if (els.leaderboardOverlay.style.display === 'flex') renderBoard();
+        });
+      }
+    }
+
+    function closeBoard() {
+      els.leaderboardOverlay.style.display = 'none';
+    }
+
+    function renderBoard() {
+      const profile = Leaderboard.getProfile && Leaderboard.getProfile();
+      const myId = profile && profile.user_id;
+
+      let rows = cachedRows.slice();
+      if (currentScope === 'members') {
+        rows = rows.filter(r => !r.is_guest);
+      } else if (currentScope === 'me' && myId) {
+        const idx = rows.findIndex(r => r.user_id === myId);
+        if (idx >= 0) {
+          const lo = Math.max(0, idx - 4);
+          rows = rows.slice(lo, lo + 9);
+        }
+      }
+
+      if (!rows.length) {
+        els.lbList.innerHTML = '';
+        els.lbEmpty.style.display = 'block';
+        els.lbEmpty.textContent = currentScope === 'me'
+          ? 'Play a run to claim your spot on the board.'
+          : 'No scores yet. Be the first to set one.';
+      } else {
+        els.lbEmpty.style.display = 'none';
+        els.lbList.innerHTML = rows.map(r => rowHtml(r, myId)).join('');
+      }
+
+      // Footer "you" summary.
+      if (myId) {
+        const mine = cachedRows.find(r => r.user_id === myId);
+        els.lbYou.innerHTML = mine
+          ? `YOU · <span class="hl">#${mine.rank}</span> · ${mine.score}`
+          : 'YOU · unranked';
+      } else {
+        els.lbYou.textContent = '';
+      }
+      renderIcons();
+    }
+
+    function rowHtml(r, myId) {
+      const isMe = r.user_id === myId;
+      const medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : '';
+      const rankCell = medal
+        ? `<span class="lb-rank-medal">${medal}</span>`
+        : `${r.rank}`;
+      const avatar = r.avatar_url
+        ? `<img src="${escapeHtml(r.avatar_url)}" alt="">`
+        : '<i data-lucide="user-round"></i>';
+      const guestTag = r.is_guest ? '<span class="lb-guest-tag">GUEST</span>' : '';
+      return `<div class="lb-row ${isMe ? 'is-me' : ''} top-${r.rank}">
+        <span class="lb-rank">${rankCell}</span>
+        <span class="lb-player">
+          <span class="lb-avatar">${avatar}</span>
+          <span class="lb-pname">${escapeHtml(r.username)}${guestTag}</span>
+        </span>
+        <span class="lb-acc">${Number(r.accuracy).toFixed(0)}%</span>
+        <span class="lb-streak">${r.best_streak}</span>
+        <span class="lb-score">${r.score}</span>
+      </div>`;
+    }
+
+    function bind() {
+      // Header
+      els.btnAccount.addEventListener('click', () => { sound.bloop(); openAuth(); });
+      els.btnOpenLeaderboard.addEventListener('click', () => { sound.bloop(); openBoard(); });
+      if (els.btnHeroLeaderboard) els.btnHeroLeaderboard.addEventListener('click', () => { sound.bloop(); openBoard(); });
+      if (els.btnViewBoard) els.btnViewBoard.addEventListener('click', () => { sound.click(); openBoard(); });
+
+      // Leaderboard overlay
+      els.btnCloseLeaderboard.addEventListener('click', () => { sound.click(); closeBoard(); });
+      els.leaderboardOverlay.addEventListener('click', (e) => {
+        if (e.target === els.leaderboardOverlay) closeBoard();
+      });
+      els.lbTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          els.lbTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentScope = tab.dataset.scope;
+          renderBoard();
+        });
+      });
+
+      // Auth modal
+      els.btnCloseAuth.addEventListener('click', () => { sound.click(); closeAuth(); });
+      els.authOverlay.addEventListener('click', (e) => {
+        if (e.target === els.authOverlay) closeAuth();
+      });
+      els.btnSigninGoogle.addEventListener('click', () => { sound.click(); doGoogle(); });
+      els.btnSigninGuest.addEventListener('click', () => { sound.click(); doGuest(); });
+      els.btnConfirmUsername.addEventListener('click', () => { sound.click(); confirmUsername(); });
+      els.authUsernameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); confirmUsername(); }
+      });
+      els.btnRename.addEventListener('click', () => { sound.click(); prepUsernameStep(); showAuthStep('username'); });
+      els.btnSignout.addEventListener('click', () => { sound.click(); doSignout(); });
+
+      // Keep the chip in sync with auth changes.
+      Leaderboard.on('auth', () => { refreshAccountChip(); });
+    }
+
+    async function start() {
+      bind();
+      refreshAccountChip();
+      await Leaderboard.init();
+      refreshAccountChip();
+
+      // If the user returned from a Google redirect mid-signup, nudge them to
+      // pick a username so they actually land on the board.
+      if (Leaderboard.isSignedIn() && Leaderboard.needsUsername()) {
+        openAuth();
+      }
+    }
+
+    return { start, openAuth, openBoard, refreshAccountChip };
+  })();
+
+  // Expose openAuth for the verdict-screen submission flow.
+  function openAuth() { lbUI.openAuth(); }
 
   init();
 });

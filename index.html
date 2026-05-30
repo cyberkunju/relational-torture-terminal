@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Do you have brains - a relational reasoning brain game that trains you to derive logical connections.">
   <title>Do you have brains</title>
-  <link rel="stylesheet" href="index.css?v=8">
+  <link rel="stylesheet" href="index.css?v=9">
 </head>
 <body>
 
@@ -14,6 +14,8 @@
     <div class="header-left">
       <span class="terminal-icon"><i data-lucide="square-terminal"></i></span>
       <div class="score-display">
+        <span class="score-chip score-points"><i data-lucide="zap"></i><span id="score-points-val">0</span></span>
+        <span class="divider">|</span>
         <span class="score-chip score-brain"><i data-lucide="brain"></i><span id="score-brain-val">0</span></span>
         <span class="divider">|</span>
         <span class="score-chip score-clown"><i data-lucide="skull"></i><span id="score-clown-val">0</span></span>
@@ -21,7 +23,14 @@
         <span class="score-chip score-streak"><i data-lucide="flame"></i><span id="score-streak-val">0</span></span>
       </div>
     </div>
-    <button class="settings-trigger" id="btn-open-settings" aria-label="Open Settings"><i data-lucide="settings"></i></button>
+    <div class="header-right">
+      <button class="header-icon-btn" id="btn-open-leaderboard" aria-label="Open Leaderboard"><i data-lucide="trophy"></i></button>
+      <button class="header-account" id="btn-account" aria-label="Account">
+        <span class="account-avatar" id="account-avatar"><i data-lucide="user-round"></i></span>
+        <span class="account-name" id="account-name">SIGN IN</span>
+      </button>
+      <button class="settings-trigger" id="btn-open-settings" aria-label="Open Settings"><i data-lucide="settings"></i></button>
+    </div>
   </header>
 
   <!-- Main View Container -->
@@ -58,6 +67,9 @@
           <div class="hero-cta-row">
             <button class="btn btn-action hero-launch" id="btn-start-game">
               <i data-lucide="play"></i> START TRAINING
+            </button>
+            <button class="ghost-link ghost-link-btn" id="btn-hero-leaderboard">
+              <i data-lucide="trophy"></i> View leaderboard
             </button>
             <a href="#how-it-works" class="ghost-link">How does it work? <i data-lucide="arrow-down"></i></a>
           </div>
@@ -280,7 +292,10 @@
 
     <!-- Screen 2: Playing Game Screen -->
     <section class="screen-view" id="screen-game" style="display: none;">
-      
+
+      <!-- Floating per-round score popup -->
+      <div class="score-popup" id="score-popup" aria-hidden="true"></div>
+
       <!-- Linear countdown timer bar -->
       <div class="progress-bar-container" id="game-timer-container">
         <div class="progress-bar-fill" id="game-timer-fill"></div>
@@ -331,6 +346,18 @@
           </div>
         </div>
 
+        <!-- Total points scored this session -->
+        <div class="verdict-points" id="verdict-points-wrap">
+          <span class="verdict-points-num" id="verdict-points">0</span>
+          <span class="verdict-points-label"><i data-lucide="zap"></i> TOTAL POINTS</span>
+        </div>
+
+        <!-- Leaderboard submission status -->
+        <div class="verdict-rank" id="verdict-rank" style="display: none;">
+          <i data-lucide="trophy"></i>
+          <span id="verdict-rank-text">Submitting to leaderboard…</span>
+        </div>
+
         <!-- Sarcastic quote -->
         <p class="verdict-quote" id="verdict-quote">
           "My pet rock scored higher than you. Do better."
@@ -338,6 +365,9 @@
 
         <!-- Actions -->
         <div class="verdict-actions">
+          <button class="btn btn-action shadow-cyan" id="btn-view-board">
+            <i data-lucide="trophy"></i> VIEW LEADERBOARD
+          </button>
           <button class="btn btn-action shadow-green" id="btn-recover">
             <i data-lucide="rotate-ccw"></i> PLAY AGAIN
           </button>
@@ -472,10 +502,121 @@
     </div>
   </div>
 
+  <!-- Leaderboard Overlay -->
+  <div class="lb-overlay" id="leaderboard-overlay" style="display: none;">
+    <div class="lb-box">
+      <div class="lb-header">
+        <div class="lb-title-group">
+          <h2><i data-lucide="trophy"></i> GLOBAL LEADERBOARD</h2>
+          <p id="lb-subtitle">The sharpest brains on the network</p>
+        </div>
+        <button class="lb-close" id="btn-close-leaderboard" aria-label="Close Leaderboard">&times;</button>
+      </div>
+
+      <div class="lb-tabs">
+        <button class="lb-tab active" data-scope="all">ALL PLAYERS</button>
+        <button class="lb-tab" data-scope="members">MEMBERS</button>
+        <button class="lb-tab" data-scope="me">AROUND ME</button>
+      </div>
+
+      <div class="lb-list-head">
+        <span class="lb-col-rank">#</span>
+        <span class="lb-col-name">PLAYER</span>
+        <span class="lb-col-acc">ACC</span>
+        <span class="lb-col-streak">STK</span>
+        <span class="lb-col-score">SCORE</span>
+      </div>
+
+      <div class="lb-list" id="lb-list">
+        <div class="lb-empty" id="lb-empty">Loading the network…</div>
+      </div>
+
+      <div class="lb-footer">
+        <span class="lb-live" id="lb-live"><span class="lb-live-dot"></span> LIVE</span>
+        <span class="lb-you" id="lb-you"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="auth-overlay" id="auth-overlay" style="display: none;">
+    <div class="auth-box">
+      <button class="auth-close" id="btn-close-auth" aria-label="Close">&times;</button>
+
+      <!-- Step 1: choose how to sign in -->
+      <div class="auth-step" id="auth-step-signin">
+        <div class="auth-head">
+          <span class="auth-glyph"><i data-lucide="user-round-cog"></i></span>
+          <h2>JOIN THE BOARD</h2>
+          <p>Pick a way to claim your spot. Your runs get ranked against everyone.</p>
+        </div>
+        <button class="btn auth-btn auth-google" id="btn-signin-google">
+          <i data-lucide="log-in"></i> CONTINUE WITH GOOGLE
+        </button>
+        <div class="auth-divider"><span>OR</span></div>
+        <button class="btn auth-btn auth-guest" id="btn-signin-guest">
+          <i data-lucide="ghost"></i> PLAY AS GUEST
+        </button>
+        <p class="auth-fineprint">Guests get a username and a place on the board — just no way to recover the account later.</p>
+        <p class="auth-error" id="auth-signin-error"></p>
+      </div>
+
+      <!-- Step 2: choose a username -->
+      <div class="auth-step" id="auth-step-username" style="display: none;">
+        <div class="auth-head">
+          <span class="auth-glyph"><i data-lucide="id-card"></i></span>
+          <h2>CHOOSE YOUR CALLSIGN</h2>
+          <p>This is how you show up on the leaderboard. 2–24 characters, must be unique.</p>
+        </div>
+        <div class="auth-input-row">
+          <input type="text" id="auth-username-input" class="auth-input" maxlength="24"
+            placeholder="e.g. neuron_nomad" autocomplete="off" spellcheck="false">
+        </div>
+        <button class="btn auth-btn auth-confirm" id="btn-confirm-username">
+          <i data-lucide="check"></i> LOCK IT IN
+        </button>
+        <p class="auth-error" id="auth-username-error"></p>
+      </div>
+
+      <!-- Step 3: signed in -->
+      <div class="auth-step" id="auth-step-account" style="display: none;">
+        <div class="auth-head">
+          <span class="auth-glyph" id="account-step-avatar"><i data-lucide="user-round-check"></i></span>
+          <h2 id="account-step-name">PLAYER</h2>
+          <p id="account-step-meta">Signed in</p>
+        </div>
+        <div class="account-stats">
+          <div class="account-stat">
+            <span class="account-stat-num" id="account-best">0</span>
+            <span class="account-stat-label">BEST SCORE</span>
+          </div>
+          <div class="account-stat">
+            <span class="account-stat-num" id="account-rank">—</span>
+            <span class="account-stat-label">GLOBAL RANK</span>
+          </div>
+          <div class="account-stat">
+            <span class="account-stat-num" id="account-runs">0</span>
+            <span class="account-stat-label">RUNS</span>
+          </div>
+        </div>
+        <button class="btn auth-btn auth-rename" id="btn-rename">
+          <i data-lucide="pencil"></i> CHANGE CALLSIGN
+        </button>
+        <button class="btn auth-btn auth-signout" id="btn-signout">
+          <i data-lucide="log-out"></i> SIGN OUT
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="lucide.min.js?v=8"></script>
-  <script src="generator.js?v=8"></script>
-  <script src="visualizer.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="lucide.min.js?v=9"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js?v=9"></script>
+  <script src="scoring.js?v=9"></script>
+  <script src="leaderboard.js?v=9"></script>
+  <script src="generator.js?v=9"></script>
+  <script src="visualizer.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
