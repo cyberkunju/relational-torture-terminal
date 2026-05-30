@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Scratch / debug artifacts (HTTP dumps, MCP tool output, one-off payloads)
+_*.html
+_*.json
+_*.mjs
+_scratch/
+_verify/
+body.txt
+headers.txt
+listout.txt
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
