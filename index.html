@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Relational Torture Terminal - RFT Relational Reasoning Brain Game.">
   <title>Relational Torture Terminal - Cognitive Suffrage Engine</title>
-  <link rel="stylesheet" href="index.css?v=3">
+  <link rel="stylesheet" href="index.css?v=5">
 </head>
 <body>
 
-  <!-- Minimalist Emoji Header -->
+  <!-- Header -->
   <header class="torture-header">
     <div class="header-left">
-      <span class="terminal-icon">📟</span>
+      <span class="terminal-icon"><i data-lucide="square-terminal"></i></span>
       <div class="score-display">
-        <span id="score-brain-val">🧠:0</span>
+        <span class="score-chip score-brain"><i data-lucide="brain"></i><span id="score-brain-val">0</span></span>
         <span class="divider">|</span>
-        <span id="score-clown-val">🤡:0</span>
+        <span class="score-chip score-clown"><i data-lucide="skull"></i><span id="score-clown-val">0</span></span>
       </div>
     </div>
-    <button class="settings-trigger" id="btn-open-settings" aria-label="Open Settings">⚙️</button>
+    <button class="settings-trigger" id="btn-open-settings" aria-label="Open Settings"><i data-lucide="settings"></i></button>
   </header>
 
   <!-- Main View Container -->
@@ -28,7 +28,7 @@
     <!-- Screen 1: Start Screen / Landing Page -->
     <section class="screen-view" id="screen-start" style="display: flex;">
       <div class="intro-container">
-        
+
         <!-- Retro Header Logo -->
         <div class="terminal-banner-logo">
           <pre class="logo-ascii">
@@ -40,52 +40,189 @@
           <span class="logo-subtitle">COGNITIVE RELATIONAL FRAME CHAMBER // PROTOCOL v1.2</span>
         </div>
 
-        <div class="status-heading">
-          <div class="accent-bar"></div>
-          <h1>STATUS: IDENTITY CRISIS</h1>
+        <!-- HERO: one clear sentence of what this is -->
+        <div class="hero-block">
+          <div class="status-heading">
+            <div class="accent-bar"></div>
+            <h1>THINK IN <span class="hl-green">RELATIONSHIPS</span>,<br>NOT IN <span class="hl-pink">FACTS</span>.</h1>
+          </div>
+          <p class="intro-text">
+            A reasoning gym disguised as a terminal. You read a few scrambled clues about how things connect, then decide whether one final statement holds up. No trivia. No memorizing. Just the raw skill of <strong>following a chain of logic</strong> to its conclusion.
+          </p>
+          <div class="hero-cta-row">
+            <button class="btn btn-action hero-launch" id="btn-start-game">
+              <i data-lucide="play"></i> START TRAINING
+            </button>
+            <a href="#how-it-works" class="ghost-link">How does it work? <i data-lucide="arrow-down"></i></a>
+          </div>
+          <div class="hero-meta">
+            <span><i data-lucide="timer"></i> 60-second rounds</span>
+            <span class="dot">·</span>
+            <span><i data-lucide="target"></i> 5 puzzle types</span>
+            <span class="dot">·</span>
+            <span><i data-lucide="wifi-off"></i> No sign-up, runs offline</span>
+          </div>
         </div>
-        <p class="intro-text">
-          The terminal's relational logic is compromised. Your task is to audit indirect system connections and resolve structural configurations. Proceed with extreme arrogance.
-        </p>
 
-        <!-- The Explanatory RFT Science Grid -->
-        <div class="info-grid">
-          
-          <div class="info-card">
-            <h3>🔴 THE COMPROMISE</h3>
-            <p>
-              Standard brain games only train working-memory capacity (N-Back). <strong>Relational Frame Theory (RFT)</strong> targets your <em>relational binding power</em>—the ability to derive relationships between stimuli. Improving RFT directly builds fluid intelligence (Gf).
-            </p>
+        <!-- THE 30-SECOND EXPLAINER: a concrete worked example -->
+        <div class="explainer-block">
+          <span class="block-tag">THE WHOLE GAME IN ONE EXAMPLE</span>
+          <div class="example-panel">
+            <div class="example-clues">
+              <span class="example-label">YOU'RE GIVEN A FEW CLUES</span>
+              <div class="example-line"><span class="ex-icon"><i data-lucide="cpu"></i></span> Router-A is faster than Router-B</div>
+              <div class="example-line"><span class="ex-icon"><i data-lucide="gauge"></i></span> Router-B is faster than Router-C</div>
+            </div>
+            <div class="example-arrow"><i data-lucide="move-right"></i></div>
+            <div class="example-question">
+              <span class="example-label">ANSWER ONE QUESTION</span>
+              <div class="example-q">Is Router-A faster than Router-C?</div>
+              <div class="example-answer">
+                Nobody told you that directly. You <strong>derive</strong> it. That single mental leap — A &gt; B &gt; C, therefore A &gt; C — is the muscle this trains.
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="info-card">
-            <h3>⚙️ THE LOGISTICS</h3>
-            <p>
-              We feed your mind 5 core architectures: Git commits ancestry, latency networks, package dependency DAGs, class hierarchies, and circuits. You must mentally map the indirect associations to validate the deductive conclusion.
-            </p>
+        <!-- PROBLEM / WHY: what this fixes that other brain games don't -->
+        <div class="why-block">
+          <span class="block-tag">WHY THIS EXISTS</span>
+          <h2 class="block-heading">Most brain games train the wrong thing.</h2>
+          <div class="why-grid">
+            <div class="why-card why-bad">
+              <span class="why-icon"><i data-lucide="circle-x"></i></span>
+              <h3>The usual stuff</h3>
+              <p>Memory games and N-Back drills mostly grow how much you can <em>hold</em> in your head. Useful, but it plateaus fast and rarely transfers to real thinking.</p>
+            </div>
+            <div class="why-card why-good">
+              <span class="why-icon"><i data-lucide="circle-check-big"></i></span>
+              <h3>What we train instead</h3>
+              <p>The ability to <strong>derive relationships you were never told</strong>. Psychologists call this Relational Frame Theory, and it sits underneath reading, math, debugging, and reasoning itself.</p>
+            </div>
+            <div class="why-card why-pay">
+              <span class="why-icon"><i data-lucide="trending-up"></i></span>
+              <h3>Why it pays off</h3>
+              <p>Relational skill is one of the few things shown to nudge <strong>fluid intelligence</strong> — your on-the-spot problem solving — rather than just rehearsing one narrow task.</p>
+            </div>
           </div>
+        </div>
 
-          <div class="info-card">
-            <h3>⚡ COGNITIVE REWARDS</h3>
-            <p>
-              By training under severe noise, you accelerate code-tracing speed, expand working-memory binding capacity, and build cognitive resilience when parsing complex systems under high pressure.
-            </p>
+        <!-- HOW TO PLAY: three dead-simple steps -->
+        <div class="how-block" id="how-it-works">
+          <span class="block-tag">HOW TO PLAY</span>
+          <h2 class="block-heading">Three steps. That's it.</h2>
+          <div class="steps-row">
+            <div class="step-card">
+              <span class="step-num">01</span>
+              <h3>READ THE CLUES</h3>
+              <p>A handful of short statements appear, shuffled out of order on purpose. Each one links two things.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-num">02</span>
+              <h3>CHAIN THEM</h3>
+              <p>Connect the links in your head until you can see the whole structure end to end.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-num">03</span>
+              <h3>CALL IT</h3>
+              <p>Hit <span class="kbd-true"><i data-lucide="check"></i> TRUE</span> or <span class="kbd-false"><i data-lucide="x"></i> FALSE</span> on the conclusion before the timer runs out.</p>
+            </div>
           </div>
+        </div>
 
+        <!-- THE 5 MODES: what you'll actually be reasoning about -->
+        <div class="modes-block">
+          <span class="block-tag">FIVE WAYS TO SUFFER</span>
+          <h2 class="block-heading">Same logic, five disguises.</h2>
+          <p class="block-sub">Every mode is the same reasoning puzzle wearing different clothes — so your brain learns the <em>pattern</em>, not one memorized format.</p>
+          <div class="modes-grid">
+            <div class="mode-card">
+              <span class="mode-glyph"><i data-lucide="radio"></i></span>
+              <h3>NETWORK LATENCY</h3>
+              <p>Rank routers by speed down a straight line. The gentle on-ramp.</p>
+              <span class="mode-skill">Linear order</span>
+            </div>
+            <div class="mode-card">
+              <span class="mode-glyph"><i data-lucide="git-branch"></i></span>
+              <h3>GIT ANCESTRY</h3>
+              <p>Trace which branch contains whose commits across a history tree.</p>
+              <span class="mode-skill">Tree paths</span>
+            </div>
+            <div class="mode-card">
+              <span class="mode-glyph"><i data-lucide="package"></i></span>
+              <h3>DEPENDENCY CONFLICTS</h3>
+              <p>Decide which packages can ship together before the install explodes.</p>
+              <span class="mode-skill">DAG paths</span>
+            </div>
+            <div class="mode-card">
+              <span class="mode-glyph"><i data-lucide="network"></i></span>
+              <h3>TYPE INHERITANCE</h3>
+              <p>Follow class hierarchies to see what inherits from what.</p>
+              <span class="mode-skill">Class hierarchy</span>
+            </div>
+            <div class="mode-card">
+              <span class="mode-glyph"><i data-lucide="cpu"></i></span>
+              <h3>LOGIC GATEWAYS</h3>
+              <p>Push 1s and 0s through AND/OR/XOR gates to the final output.</p>
+              <span class="mode-skill">Boolean propagation</span>
+            </div>
+            <div class="mode-card mode-card-cta">
+              <span class="mode-glyph"><i data-lucide="sliders-horizontal"></i></span>
+              <h3>YOUR CALL</h3>
+              <p>Pick a mode and difficulty in settings, or just dive into the default.</p>
+              <span class="mode-skill">2 → 8 premises</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BENEFITS: what you walk away with -->
+        <div class="benefits-block">
+          <span class="block-tag">WHAT YOU WALK AWAY WITH</span>
+          <div class="benefits-grid">
+            <div class="benefit-row">
+              <span class="benefit-mark"><i data-lucide="zap"></i></span>
+              <div>
+                <h3>Faster code-tracing</h3>
+                <p>Read a stack trace, a dependency graph, or someone else's spaghetti and see the shape of it sooner.</p>
+              </div>
+            </div>
+            <div class="benefit-row">
+              <span class="benefit-mark"><i data-lucide="layers"></i></span>
+              <div>
+                <h3>Bigger working memory</h3>
+                <p>Hold more moving parts in your head at once without dropping the thread.</p>
+              </div>
+            </div>
+            <div class="benefit-row">
+              <span class="benefit-mark"><i data-lucide="shield"></i></span>
+              <div>
+                <h3>Composure under noise</h3>
+                <p>Optional chaos modifiers teach you to reason clearly even when everything is screaming at you.</p>
+              </div>
+            </div>
+            <div class="benefit-row">
+              <span class="benefit-mark"><i data-lucide="trending-up"></i></span>
+              <div>
+                <h3>Transferable reasoning</h3>
+                <p>The skill underneath isn't trivia. It carries into math, writing, debugging, and decisions.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Modifier Options Configuration -->
-        <div class="config-title-header">
-          <span class="config-tag">SUFFERING PARAMETERS</span>
-          <h2>CHOOSE YOUR MODIFIERS</h2>
+        <div class="config-title-header" id="modifiers">
+          <span class="config-tag">OPTIONAL DIFFICULTY MODIFIERS</span>
+          <h2>CRANK UP THE CHAOS</h2>
+          <p class="config-note">Leave these off for a clean start. Switch them on once the base game feels easy — that's when the real gains begin.</p>
         </div>
 
         <div class="modifiers-list">
-          
+
           <div class="modifier-card" id="card-gibberish">
             <div class="card-details">
-              <h3>abc GIBBERISH MODE</h3>
-              <p>Text becomes an unstable soup of phonemes (e.g. Flib-10, Zoop-24). Decipher at your own peril.</p>
+              <h3><i data-lucide="case-sensitive"></i> GIBBERISH MODE</h3>
+              <p>Real names turn into nonsense tokens (Flib-10, Zoop-24). Strips away familiarity so you reason on structure alone.</p>
             </div>
             <label class="custom-checkbox">
               <input type="checkbox" id="check-gibberish">
@@ -95,8 +232,8 @@
 
           <div class="modifier-card" id="card-stroop">
             <div class="card-details">
-              <h3>🎨 STROOP MODE</h3>
-              <p>The word "Red" is Blue. The word "Blue" is Green. Color styling overrides contradict text meaning.</p>
+              <h3><i data-lucide="palette"></i> STROOP MODE</h3>
+              <p>Words get painted in colors that fight their meaning. Your brain must ignore the visual noise and trust the text.</p>
             </div>
             <label class="custom-checkbox">
               <input type="checkbox" id="check-stroop" checked>
@@ -106,8 +243,8 @@
 
           <div class="modifier-card" id="card-negation">
             <div class="card-details">
-              <h3>🤷‍♂️ NEGATION MODE</h3>
-              <p>Premises compile double negatives. "is not slower than" instead of "is faster than".</p>
+              <h3><i data-lucide="flip-horizontal-2"></i> NEGATION MODE</h3>
+              <p>Clues hide behind double negatives — "is not slower than" instead of "is faster than". Untangle before you answer.</p>
             </div>
             <label class="custom-checkbox">
               <input type="checkbox" id="check-negation">
@@ -117,8 +254,8 @@
 
           <div class="modifier-card" id="card-panic">
             <div class="card-details">
-              <h3>⏱️ PANIC TIMER</h3>
-              <p>3 seconds to solve the logic or suffer an immediate Smoothbrain clown penalty.</p>
+              <h3><i data-lucide="alarm-clock"></i> PANIC TIMER</h3>
+              <p>Three seconds per round. Miss the window and the clown takes the point. For when you think you're fast.</p>
             </div>
             <label class="custom-checkbox">
               <input type="checkbox" id="check-panic">
@@ -128,9 +265,10 @@
 
         </div>
 
-        <button class="btn btn-action" id="btn-start-game">
-          START THE SUFFERING
+        <button class="btn btn-action btn-start-final" id="btn-start-game-bottom">
+          <i data-lucide="play"></i> START TRAINING
         </button>
+        <p class="final-footnote"><i data-lucide="brain"></i> brain points for correct chains · <i data-lucide="skull"></i> clown points for broken ones. Beat your own efficiency score.</p>
       </div>
     </section>
 
@@ -147,9 +285,9 @@
         <!-- Target container for premises list -->
         <div class="puzzle-premises" id="game-premises">
           <!-- JS dynamic contents -->
-          <div class="premise-item">⏳ A &gt; B</div>
-          <div class="premise-item">⚙️ B = C</div>
-          <div class="premise-item">🧮 C &gt; D</div>
+          <div class="premise-item"><i data-lucide="chevron-right"></i> A &gt; B</div>
+          <div class="premise-item"><i data-lucide="chevron-right"></i> B = C</div>
+          <div class="premise-item"><i data-lucide="chevron-right"></i> C &gt; D</div>
         </div>
 
         <!-- Divider line -->
@@ -164,10 +302,10 @@
         <!-- Answers -->
         <div class="action-buttons-grid">
           <button class="btn-choice choice-false" id="btn-choice-false">
-            FALSE ❌
+            <i data-lucide="x"></i> FALSE
           </button>
           <button class="btn-choice choice-true" id="btn-choice-true">
-            TRUE ✅
+            <i data-lucide="check"></i> TRUE
           </button>
         </div>
       </div>
@@ -177,7 +315,7 @@
     <section class="screen-view" id="screen-verdict" style="display: none;">
       <div class="verdict-container">
         <span class="verdict-banner">SYSTEM DIAGNOSTIC COMPLETE</span>
-        <h2 class="verdict-grade" id="verdict-title">FINAL VERDICT: SMOOTH BRAIN 🤡</h2>
+        <h2 class="verdict-grade" id="verdict-title">FINAL VERDICT: SMOOTH BRAIN</h2>
 
         <!-- Score efficiency block -->
         <div class="efficiency-badge-wrapper">
@@ -195,10 +333,10 @@
         <!-- Actions -->
         <div class="verdict-actions">
           <button class="btn btn-action shadow-green" id="btn-recover">
-            TRY TO RECOVER 🧠
+            <i data-lucide="brain"></i> TRY TO RECOVER
           </button>
           <button class="btn btn-action shadow-pink" id="btn-giveup">
-            GIVE UP FOREVER 🏳️
+            <i data-lucide="flag"></i> GIVE UP FOREVER
           </button>
         </div>
       </div>
@@ -260,7 +398,7 @@
       <div class="drawer-list-group">
         
         <div class="drawer-list-item" id="list-item-gibberish">
-          <span>⚠️ Gibberish Mode</span>
+          <span><i data-lucide="case-sensitive"></i> Gibberish Mode</span>
           <label class="custom-checkbox">
             <input type="checkbox" id="drawer-check-gibberish">
             <span class="checkmark"></span>
@@ -268,7 +406,7 @@
         </div>
 
         <div class="drawer-list-item" id="list-item-stroop">
-          <span>🎨 Stroop Mode</span>
+          <span><i data-lucide="palette"></i> Stroop Mode</span>
           <label class="custom-checkbox">
             <input type="checkbox" id="drawer-check-stroop">
             <span class="checkmark"></span>
@@ -276,7 +414,7 @@
         </div>
 
         <div class="drawer-list-item" id="list-item-negation">
-          <span>🤷‍♂️ Negation Mode</span>
+          <span><i data-lucide="flip-horizontal-2"></i> Negation Mode</span>
           <label class="custom-checkbox">
             <input type="checkbox" id="drawer-check-negation">
             <span class="checkmark"></span>
@@ -284,7 +422,7 @@
         </div>
 
         <div class="drawer-list-item" id="list-item-panic">
-          <span>⏱️ Panic Timer (3s)</span>
+          <span><i data-lucide="alarm-clock"></i> Panic Timer (3s)</span>
           <label class="custom-checkbox">
             <input type="checkbox" id="drawer-check-panic">
             <span class="checkmark"></span>
@@ -317,8 +455,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="generator.js?v=3"></script>
-  <script src="visualizer.js?v=3"></script>
-  <script src="app.js?v=3"></script>
+  <script src="lucide.min.js?v=5"></script>
+  <script src="generator.js?v=5"></script>
+  <script src="visualizer.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

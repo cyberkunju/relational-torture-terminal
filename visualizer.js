@@ -124,15 +124,24 @@ const Visualizer = (() => {
     ctx.fill();
     ctx.stroke();
 
-    ctx.font = 'bold 11px monospace';
-    ctx.fillStyle = colors.accent;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('⚡', midX, midY);
+    // Crisp vector "X" cross instead of an emoji glyph
+    const xr = 5;
+    ctx.beginPath();
+    ctx.moveTo(midX - xr, midY - xr);
+    ctx.lineTo(midX + xr, midY + xr);
+    ctx.moveTo(midX + xr, midY - xr);
+    ctx.lineTo(midX - xr, midY + xr);
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.lineCap = 'butt';
 
     if (label) {
       ctx.font = '10px monospace';
       ctx.fillStyle = colors.accent;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillText(label, midX, midY - 20);
     }
   }

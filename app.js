@@ -34,8 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
     hoveredNodeId: null
   };
 
-  // Emojis list for premise lines
-  const premiseEmojis = ['⏳', '⚙️', '🧮', '⚡', '💾', '📡', '🛠️', '🔑'];
+  // Lucide icon names cycled as premise bullet markers
+  const premiseIcons = ['terminal', 'cpu', 'database', 'zap', 'git-commit-horizontal', 'radio', 'wrench', 'key-round'];
+
+  // Re-render any <i data-lucide> elements injected after initial load
+  function renderIcons() {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
 
   // DOM Elements
   const els = {
@@ -55,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkNegation: document.getElementById('check-negation'),
     checkPanic: document.getElementById('check-panic'),
     btnStartGame: document.getElementById('btn-start-game'),
+    btnStartGameBottom: document.getElementById('btn-start-game-bottom'),
 
     // Game Screen Elements
     gameTimerContainer: document.getElementById('game-timer-container'),
@@ -177,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     syncUIFromState();
     updateScoreHUD();
+    renderIcons();
   }
 
   function setupEventListeners() {
@@ -204,6 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       startNewRound();
     });
+
+    // Secondary start button at the bottom of the landing page
+    if (els.btnStartGameBottom) {
+      els.btnStartGameBottom.addEventListener('click', () => {
+        els.btnStartGame.click();
+      });
+    }
 
     // Apply Settings button inside Drawer
     els.btnApplySettings.addEventListener('click', () => {
@@ -406,8 +422,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateScoreHUD() {
-    els.scoreBrain.textContent = `🧠:${state.brainScore}`;
-    els.scoreClown.textContent = `🤡:${state.clownScore}`;
+    els.scoreBrain.textContent = `${state.brainScore}`;
+    els.scoreClown.textContent = `${state.clownScore}`;
   }
 
   // Stroop Mode color interference wrapper
@@ -503,13 +519,13 @@ document.addEventListener('DOMContentLoaded', () => {
     els.gamePremises.innerHTML = '';
     
     if (state.presentationMode === 'standard') {
-      // Add all premises with random emojis
-      pz.premises.forEach((premiseText) => {
+      // Add all premises with cycling icon markers
+      pz.premises.forEach((premiseText, i) => {
         const item = document.createElement('div');
         item.className = 'premise-item';
         
-        const randomEmoji = premiseEmojis[Math.floor(Math.random() * premiseEmojis.length)];
-        item.innerHTML = `${randomEmoji} ${applyStroopColoring(premiseText)}`;
+        const iconName = premiseIcons[i % premiseIcons.length];
+        item.innerHTML = `<i data-lucide="${iconName}"></i> ${applyStroopColoring(premiseText)}`;
         els.gamePremises.appendChild(item);
       });
       
@@ -519,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Carousel Mode initialization
       showCarouselPremise(0);
     }
+    renderIcons();
   }
 
   function showCarouselPremise(idx) {
@@ -530,8 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show one active premise
     const item = document.createElement('div');
     item.className = 'premise-item';
-    const randomEmoji = premiseEmojis[Math.floor(Math.random() * premiseEmojis.length)];
-    item.innerHTML = `${randomEmoji} ${applyStroopColoring(pz.premises[idx])}`;
+    const iconName = premiseIcons[idx % premiseIcons.length];
+    item.innerHTML = `<i data-lucide="${iconName}"></i> ${applyStroopColoring(pz.premises[idx])}`;
     els.gamePremises.appendChild(item);
 
     // Question holds placeholder until carousel completes
@@ -540,6 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       els.gameQuestion.innerHTML = `<em>TAP SPACEBAR FOR NEXT LOG LINE...</em>`;
     }
+    renderIcons();
   }
 
   function navigateCarouselNext() {
@@ -608,29 +626,35 @@ document.addEventListener('DOMContentLoaded', () => {
     els.verdictEfficiency.textContent = `${efficiency}%`;
 
     // Verdict rankings
-    let verdict = 'SMOOTH BRAIN 🤡';
+    let verdict = 'SMOOTH BRAIN';
+    let verdictIcon = 'skull';
     let quote = '"My pet rock scored higher than you. Do better."';
     
     if (customMessage) {
       quote = customMessage;
     } else {
       if (efficiency >= 90) {
-        verdict = 'SYNTACTIC GOD ⚡';
+        verdict = 'SYNTACTIC GOD';
+        verdictIcon = 'zap';
         quote = '"Absolute logical transcendence. System fully optimized. Proceed with extreme arrogance."';
       } else if (efficiency >= 70) {
-        verdict = 'GIGA BRAIN 🧠';
+        verdict = 'GIGA BRAIN';
+        verdictIcon = 'brain';
         quote = '"Highly efficient logical routing detected. Good compilation."';
       } else if (efficiency >= 40) {
-        verdict = 'AVERAGE COMPILER ⚙️';
+        verdict = 'AVERAGE COMPILER';
+        verdictIcon = 'settings';
         quote = '"Not terrible. But you won\'t replace ChatGPT anytime soon."';
       } else {
-        verdict = 'SMOOTH BRAIN 🤡';
+        verdict = 'SMOOTH BRAIN';
+        verdictIcon = 'skull';
         quote = '"My pet rock scored higher than you. Do better."';
       }
     }
 
-    els.verdictTitle.textContent = `FINAL VERDICT: ${verdict}`;
+    els.verdictTitle.innerHTML = `FINAL VERDICT: ${verdict} <i data-lucide="${verdictIcon}"></i>`;
     els.verdictQuote.textContent = quote;
+    renderIcons();
   }
 
   init();

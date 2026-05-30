@@ -116,7 +116,7 @@ body {
   justify-content: center;
   padding: 2rem 1.5rem;
   width: 100%;
-  max-width: 900px; /* Expanded for landing page grid layout */
+  max-width: 1040px; /* Expanded for landing page grid layout */
   margin: 0 auto;
 }
 
@@ -258,7 +258,7 @@ body {
 .intro-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 3.5rem;
 }
 
 .status-heading {
@@ -819,3 +819,572 @@ canvas {
 .color-p-pink { color: var(--accent) !important; }
 .color-p-cyan { color: var(--secondary) !important; }
 .color-p-white { color: var(--text-main) !important; }
+
+/* ============================================================
+   LANDING PAGE — REDESIGN
+   Stays inside the existing palette: black bg, neon green/cyan/
+   pink/orange, thick white borders, hard offset shadows.
+   ============================================================ */
+
+/* Shared section heading vocabulary */
+.block-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--warning);
+  text-transform: uppercase;
+  border: 1.5px solid var(--warning);
+  padding: 0.3rem 0.7rem;
+  align-self: flex-start;
+}
+
+.block-heading {
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+  margin-top: 0.9rem;
+}
+
+.block-sub {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-top: 0.6rem;
+  max-width: 640px;
+}
+
+.block-sub em {
+  color: var(--secondary);
+  font-style: italic;
+}
+
+/* Inline text highlighters reused across the page */
+.hl-green { color: var(--primary); text-shadow: 0 0 12px rgba(0,255,0,0.35); }
+.hl-pink  { color: var(--accent);  text-shadow: 0 0 12px rgba(255,0,127,0.3); }
+
+/* ---------- HERO ---------- */
+.hero-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero-block .status-heading h1 {
+  font-size: 2.7rem;
+  line-height: 1.05;
+  font-style: normal;
+}
+
+.hero-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.hero-launch {
+  width: auto;
+  padding: 1.1rem 2.4rem;
+  font-size: 1.15rem;
+}
+
+.ghost-link {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--secondary);
+  text-decoration: none;
+  border-bottom: 1.5px dashed var(--secondary);
+  padding-bottom: 2px;
+  transition: var(--transition-fast);
+}
+
+.ghost-link:hover {
+  color: var(--text-main);
+  border-color: var(--text-main);
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.hero-meta .dot { color: #333; }
+
+/* ---------- WORKED EXAMPLE ---------- */
+.explainer-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.example-panel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--panel-bg);
+  border: var(--border-width) solid var(--secondary);
+  box-shadow: 6px 6px 0px var(--secondary);
+  padding: 1.8rem;
+}
+
+.example-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 0.8rem;
+}
+
+.example-line {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.example-line .ex-emoji { font-size: 1.2rem; }
+
+.example-arrow {
+  font-size: 2.2rem;
+  color: var(--primary);
+  text-align: center;
+  text-shadow: 0 0 12px rgba(0,255,0,0.4);
+}
+
+.example-q {
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-style: italic;
+  color: var(--secondary);
+  margin-bottom: 0.7rem;
+}
+
+.example-answer {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.example-answer strong { color: var(--primary); }
+
+/* ---------- WHY ---------- */
+.why-block { display: flex; flex-direction: column; }
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.6rem;
+}
+
+.why-card {
+  background: var(--panel-bg);
+  border: var(--border-width) solid var(--text-main);
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 4px 4px 0px var(--text-muted);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.why-card:hover { transform: translate(-2px,-2px); }
+.why-bad:hover  { box-shadow: 6px 6px 0px var(--accent); border-color: var(--accent); }
+.why-good:hover { box-shadow: 6px 6px 0px var(--primary); border-color: var(--primary); }
+.why-pay:hover  { box-shadow: 6px 6px 0px var(--secondary); border-color: var(--secondary); }
+
+.why-icon { font-size: 1.4rem; }
+
+.why-card h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.why-card p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.why-card p strong { color: var(--primary); }
+.why-card p em { color: var(--secondary); font-style: italic; }
+
+/* ---------- HOW TO PLAY ---------- */
+.how-block { display: flex; flex-direction: column; scroll-margin-top: 1.5rem; }
+
+.steps-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.6rem;
+}
+
+.step-card {
+  position: relative;
+  background: var(--bg-color);
+  border: var(--border-width) solid var(--text-main);
+  padding: 1.6rem 1.4rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.step-card h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+}
+
+.step-card p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.kbd-true, .kbd-false {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 0 0.3rem;
+}
+.kbd-true { color: var(--primary); }
+.kbd-false { color: var(--accent); }
+
+/* ---------- MODES ---------- */
+.modes-block { display: flex; flex-direction: column; }
+
+.modes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  margin-top: 1.6rem;
+}
+
+.mode-card {
+  background: var(--panel-bg);
+  border: 2px solid #2a2a2a;
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: var(--transition-fast);
+}
+
+.mode-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 0 var(--primary);
+}
+
+.mode-glyph { font-size: 1.7rem; }
+
+.mode-card h3 {
+  font-size: 0.98rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+}
+
+.mode-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.mode-skill {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--secondary);
+  border-top: 1px dashed #2a2a2a;
+  padding-top: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+.mode-card-cta {
+  border-color: var(--warning);
+  border-style: dashed;
+}
+.mode-card-cta:hover {
+  border-color: var(--warning);
+  box-shadow: 0 6px 0 var(--warning);
+}
+.mode-card-cta .mode-skill { color: var(--warning); }
+
+/* ---------- BENEFITS ---------- */
+.benefits-block { display: flex; flex-direction: column; }
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.4rem 2rem;
+  margin-top: 1.6rem;
+}
+
+.benefit-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border-left: 3px solid var(--primary);
+  background: rgba(255,255,255,0.02);
+}
+
+.benefit-mark { font-size: 1.6rem; line-height: 1; }
+
+.benefit-row h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+}
+
+.benefit-row p {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ---------- CONFIG NOTE + FINAL CTA ---------- */
+.config-note {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 0.7rem;
+  max-width: 640px;
+}
+
+.btn-start-final {
+  margin-top: 0.5rem;
+}
+
+.final-footnote {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-top: -1.5rem;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 860px) {
+  .why-grid, .steps-row, .modes-grid { grid-template-columns: 1fr 1fr; }
+  .benefits-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .intro-container { gap: 2.6rem; }
+  .hero-block .status-heading h1 { font-size: 2rem; }
+  .block-heading { font-size: 1.5rem; }
+  .why-grid, .steps-row, .modes-grid { grid-template-columns: 1fr; }
+  .example-panel { grid-template-columns: 1fr; text-align: left; }
+  .example-arrow { transform: rotate(90deg); }
+  .hero-launch { width: 100%; }
+  .hero-cta-row { gap: 1rem; }
+}
+
+/* ============================================================
+   LUCIDE ICONS — sizing, alignment, and per-context coloring
+   Icons inherit currentColor and scale to 1em by default so they
+   sit cleanly inside text and headings.
+   ============================================================ */
+
+/* Base: every Lucide svg + the <i> placeholder before hydration */
+[data-lucide],
+.svg-icon,
+svg.lucide {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em; /* optical baseline alignment with text */
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+/* Hide the raw <i> until Lucide swaps it for an <svg> (prevents flash) */
+i[data-lucide]:not(:has(svg)) {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+/* ---------- Header HUD ---------- */
+.terminal-icon {
+  font-size: 1.4rem;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+}
+
+.score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.score-chip svg, .score-chip [data-lucide] { font-size: 1.25rem; }
+.score-brain { color: var(--primary); }
+.score-clown { color: var(--accent); }
+.score-display .divider { color: var(--text-muted); }
+
+.settings-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+/* ---------- Hero ---------- */
+.hero-launch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+.hero-launch svg, .hero-launch [data-lucide] { font-size: 1.1em; }
+
+.ghost-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.hero-meta svg, .hero-meta [data-lucide] { color: var(--secondary); font-size: 1.05em; }
+.hero-meta .dot { color: #333; }
+
+/* ---------- Worked example ---------- */
+.ex-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary);
+  font-size: 1.2rem;
+}
+.example-arrow {
+  font-size: 2rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Why cards ---------- */
+.why-icon {
+  font-size: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+}
+.why-bad  .why-icon { color: var(--accent); }
+.why-good .why-icon { color: var(--primary); }
+.why-pay  .why-icon { color: var(--secondary); }
+
+/* ---------- How-to steps (icons live in body text) ---------- */
+.kbd-true, .kbd-false {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* ---------- Mode cards ---------- */
+.mode-glyph {
+  font-size: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary);
+}
+.mode-card:hover .mode-glyph { color: var(--secondary); }
+.mode-card-cta .mode-glyph { color: var(--warning); }
+
+/* ---------- Benefit rows ---------- */
+.benefit-mark {
+  font-size: 1.7rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary);
+  line-height: 1;
+}
+
+/* ---------- Modifier card headings ---------- */
+.card-details h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.card-details h3 svg, .card-details h3 [data-lucide] { color: var(--secondary); font-size: 1.15em; }
+
+/* ---------- Drawer list items ---------- */
+.drawer-list-item span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.drawer-list-item svg, .drawer-list-item [data-lucide] { color: var(--secondary); font-size: 1.1em; }
+
+/* ---------- Final footnote ---------- */
+.final-footnote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.final-footnote svg, .final-footnote [data-lucide] { font-size: 1.05em; }
+
+/* ---------- Game choice buttons ---------- */
+.btn-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.choice-true svg, .choice-true [data-lucide] { color: var(--primary); }
+.choice-false svg, .choice-false [data-lucide] { color: var(--accent); }
+.btn-choice:hover svg, .btn-choice:hover [data-lucide] { color: inherit; }
+
+/* ---------- Premise items (game screen) ---------- */
+.premise-item svg, .premise-item [data-lucide] {
+  color: var(--primary);
+  font-size: 0.85em;
+}
+
+/* ---------- Verdict + recover/giveup buttons ---------- */
+.verdict-grade {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+.shadow-green, .shadow-pink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
