@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Relational Torture Terminal - RFT Relational Reasoning Brain Game.">
+  <title>Relational Torture Terminal - Cognitive Suffrage Engine</title>
+  <link rel="stylesheet" href="index.css?v=2">
+</head>
+<body>
+
+  <!-- Minimalist Emoji Header -->
+  <header class="torture-header">
+    <div class="header-left">
+      <span class="terminal-icon">📟</span>
+      <div class="score-display">
+        <span id="score-brain-val">🧠:0</span>
+        <span class="divider">|</span>
+        <span id="score-clown-val">🤡:0</span>
+      </div>
+    </div>
+    <button class="settings-trigger" id="btn-open-settings" aria-label="Open Settings">⚙️</button>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="viewport-container">
+
+    <!-- Screen 1: Start Screen -->
+    <section class="screen-view" id="screen-start" style="display: flex;">
+      <div class="intro-container">
+        <div class="status-heading">
+          <div class="accent-bar"></div>
+          <h1>STATUS: IDENTITY CRISIS</h1>
+        </div>
+        <p class="intro-text">
+          The logic has been compromised. The options below will dictate the severity of your cognitive dissonance. Proceed with extreme arrogance.
+        </p>
+
+        <!-- Modifier Options List -->
+        <div class="modifiers-list">
+          
+          <div class="modifier-card" id="card-gibberish">
+            <div class="card-details">
+              <h3>abc GIBBERISH MODE</h3>
+              <p>Text becomes an unstable soup of phonemes. Decipher at your own peril.</p>
+            </div>
+            <label class="custom-checkbox">
+              <input type="checkbox" id="check-gibberish">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+
+          <div class="modifier-card" id="card-stroop">
+            <div class="card-details">
+              <h3>🎨 STROOP MODE</h3>
+              <p>The word "Red" is Blue. The word "Blue" is Green. Colors lie to you constantly.</p>
+            </div>
+            <label class="custom-checkbox">
+              <input type="checkbox" id="check-stroop" checked>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+
+          <div class="modifier-card" id="card-negation">
+            <div class="card-details">
+              <h3>🤷‍♂️ NEGATION MODE</h3>
+              <p>Every premise is a double negative. "Not unlikely" means "Likely". Maybe.</p>
+            </div>
+            <label class="custom-checkbox">
+              <input type="checkbox" id="check-negation">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+
+          <div class="modifier-card" id="card-panic">
+            <div class="card-details">
+              <h3>⏱️ PANIC TIMER</h3>
+              <p>3 seconds to solve or suffer an immediate Smoothbrain penalty.</p>
+            </div>
+            <label class="custom-checkbox">
+              <input type="checkbox" id="check-panic">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+
+        </div>
+
+        <button class="btn btn-action" id="btn-start-game">
+          START THE SUFFERING
+        </button>
+      </div>
+    </section>
+
+    <!-- Screen 2: Playing Game Screen -->
+    <section class="screen-view" id="screen-game" style="display: none;">
+      
+      <!-- Linear countdown timer bar -->
+      <div class="progress-bar-container" id="game-timer-container">
+        <div class="progress-bar-fill" id="game-timer-fill"></div>
+      </div>
+
+      <!-- Puzzle Card -->
+      <div class="game-console">
+        <!-- Target container for premises list -->
+        <div class="puzzle-premises" id="game-premises">
+          <!-- JS dynamic contents -->
+          <div class="premise-item">⏳ A &gt; B</div>
+          <div class="premise-item">⚙️ B = C</div>
+          <div class="premise-item">🧮 C &gt; D</div>
+        </div>
+
+        <!-- Divider line -->
+        <hr class="console-divider">
+
+        <!-- Question target -->
+        <div class="puzzle-question">
+          <span class="question-tag">PREMISE VERIFICATION REQUIRED</span>
+          <h2 class="question-statement" id="game-question">IS D &gt; A?</h2>
+        </div>
+
+        <!-- Answers -->
+        <div class="action-buttons-grid">
+          <button class="btn-choice choice-false" id="btn-choice-false">
+            FALSE ❌
+          </button>
+          <button class="btn-choice choice-true" id="btn-choice-true">
+            TRUE ✅
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 3: Verdict Failure Screen -->
+    <section class="screen-view" id="screen-verdict" style="display: none;">
+      <div class="verdict-container">
+        <span class="verdict-banner">SYSTEM DIAGNOSTIC COMPLETE</span>
+        <h2 class="verdict-grade" id="verdict-title">FINAL VERDICT: SMOOTH BRAIN 🤡</h2>
+
+        <!-- Score efficiency block -->
+        <div class="efficiency-badge-wrapper">
+          <div class="efficiency-badge">
+            <span class="efficiency-num" id="verdict-efficiency">00%</span>
+            <span class="efficiency-label">COGNITIVE EFFICIENCY</span>
+          </div>
+        </div>
+
+        <!-- Sarcastic quote -->
+        <p class="verdict-quote" id="verdict-quote">
+          "My pet rock scored higher than you. Do better."
+        </p>
+
+        <!-- Actions -->
+        <div class="verdict-actions">
+          <button class="btn btn-action shadow-green" id="btn-recover">
+            TRY TO RECOVER 🧠
+          </button>
+          <button class="btn btn-action shadow-pink" id="btn-giveup">
+            GIVE UP FOREVER 🏳️
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Sidebar Drawer: Torture Drawer Settings -->
+  <aside class="sidebar-drawer" id="settings-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <h2>TORTURE SETTINGS</h2>
+        <p>PICK YOUR POISON</p>
+      </div>
+      <button class="drawer-close" id="btn-close-settings" aria-label="Close Settings">&times;</button>
+    </div>
+
+    <div class="drawer-body">
+      
+      <!-- Selection of frame mode -->
+      <div class="drawer-group">
+        <label class="drawer-label">ACTIVE RELATIONAL FRAME</label>
+        <select class="drawer-select" id="drawer-mode">
+          <option value="network">Network Latency (Linear order)</option>
+          <option value="git">Git Commit Ancestry (Tree paths)</option>
+          <option value="dependency">Dependency Conflicts (DAG paths)</option>
+          <option value="inheritance">Type Inheritance (Class hierarchy)</option>
+          <option value="logic">Logic Gateways (Boolean propagation)</option>
+        </select>
+      </div>
+
+      <!-- Difficulty scale slider -->
+      <div class="drawer-group">
+        <label class="drawer-label">
+          <span>DIFFICULTY (PREMISES)</span>
+          <span class="drawer-val-display" id="drawer-premises-val">3</span>
+        </label>
+        <input type="range" class="drawer-slider" id="drawer-premises-count" min="2" max="8" value="3">
+      </div>
+
+      <!-- Presentation mode selectors -->
+      <div class="drawer-group">
+        <label class="drawer-label">PRESENTATION SPEED</label>
+        <div class="drawer-toggles">
+          <label class="toggle-option">
+            <input type="radio" name="drawer-presentation" value="standard" checked>
+            <span>STANDARD</span>
+          </label>
+          <label class="toggle-option">
+            <input type="radio" name="drawer-presentation" value="carousel">
+            <span>CAROUSEL</span>
+          </label>
+        </div>
+      </div>
+
+      <hr class="drawer-divider">
+
+      <!-- Checklist of modifiers -->
+      <div class="drawer-list-group">
+        
+        <div class="drawer-list-item" id="list-item-gibberish">
+          <span>⚠️ Gibberish Mode</span>
+          <label class="custom-checkbox">
+            <input type="checkbox" id="drawer-check-gibberish">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+
+        <div class="drawer-list-item" id="list-item-stroop">
+          <span>🎨 Stroop Mode</span>
+          <label class="custom-checkbox">
+            <input type="checkbox" id="drawer-check-stroop">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+
+        <div class="drawer-list-item" id="list-item-negation">
+          <span>🤷‍♂️ Negation Mode</span>
+          <label class="custom-checkbox">
+            <input type="checkbox" id="drawer-check-negation">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+
+        <div class="drawer-list-item" id="list-item-panic">
+          <span>⏱️ Panic Timer (3s)</span>
+          <label class="custom-checkbox">
+            <input type="checkbox" id="drawer-check-panic">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+
+      </div>
+
+      <button class="btn btn-drawer-apply" id="btn-apply-settings">
+        APPLY SUFFERING
+      </button>
+
+    </div>
+  </aside>
+
+  <!-- Review Panel Overlay (Ties in graph visualizer) -->
+  <div class="review-panel-overlay" id="drawer-review" style="display: none;">
+    <div class="review-panel-box">
+      <div class="review-header-title">
+        <h3>COMPILATION DEDUCTION GRAPH</h3>
+        <p>Inspect paths to review logical traces</p>
+      </div>
+      <div class="review-canvas-container">
+        <canvas id="visualizer-canvas"></canvas>
+      </div>
+      <button class="btn btn-action" id="btn-next-review" style="width:100%; border-color:var(--primary); color:var(--primary);">
+        NEXT ROUND
+      </button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="generator.js?v=2"></script>
+  <script src="visualizer.js?v=2"></script>
+  <script src="app.js?v=2"></script>
+</body>
+</html>
