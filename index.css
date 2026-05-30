@@ -116,8 +116,15 @@ body {
   justify-content: center;
   padding: 2rem 1.5rem;
   width: 100%;
+  max-width: 900px; /* Expanded for landing page grid layout */
+  margin: 0 auto;
+}
+
+/* Play and verdict screens keep narrower, centered width for readability */
+#screen-game, #screen-verdict {
   max-width: 650px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .screen-view {
@@ -129,6 +136,122 @@ body {
 @keyframes slideFadeIn {
   from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Retro ASCII logo layout */
+.terminal-banner-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px dashed #222;
+  padding-bottom: 2rem;
+}
+
+.logo-ascii {
+  color: var(--primary);
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.35);
+  font-family: var(--font-mono);
+  font-weight: bold;
+  font-size: 0.75rem;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.8rem;
+  overflow: hidden;
+  max-width: 100%;
+  white-space: pre;
+}
+
+@media (max-width: 768px) {
+  .logo-ascii {
+    font-size: 0.5rem; /* Scale down ASCII art on tablet */
+  }
+}
+
+@media (max-width: 576px) {
+  .logo-ascii {
+    font-size: 0.4rem; /* Scale down ASCII art on mobile */
+  }
+}
+
+.logo-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid var(--text-main);
+  padding: 0.3rem 0.8rem;
+  letter-spacing: 1px;
+}
+
+/* Three-column Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr; /* Stack vertically on small screens */
+  }
+}
+
+.info-card {
+  background: var(--panel-bg);
+  border: var(--border-width) solid var(--text-main);
+  padding: 1.2rem;
+  box-shadow: 4px 4px 0px var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: transform var(--transition-fast);
+}
+
+.info-card h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.info-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.info-card p strong {
+  color: var(--primary);
+}
+
+.info-card p em {
+  font-style: italic;
+  color: var(--secondary);
+}
+
+/* Config Header */
+.config-title-header {
+  border-top: 2px dashed #222;
+  padding-top: 2rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.config-tag {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--warning);
+  letter-spacing: 1.5px;
+}
+
+.config-title-header h2 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
 }
 
 /* Screen 1: Start Screen */
