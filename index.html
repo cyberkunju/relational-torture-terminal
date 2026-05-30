@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Relational Torture Terminal - RFT Relational Reasoning Brain Game.">
-  <title>Relational Torture Terminal - Cognitive Suffrage Engine</title>
-  <link rel="stylesheet" href="index.css?v=5">
+  <meta name="description" content="Do you have brains - a relational reasoning brain game that trains you to derive logical connections.">
+  <title>Do you have brains</title>
+  <link rel="stylesheet" href="index.css?v=7">
 </head>
 <body>
 
@@ -17,6 +17,8 @@
         <span class="score-chip score-brain"><i data-lucide="brain"></i><span id="score-brain-val">0</span></span>
         <span class="divider">|</span>
         <span class="score-chip score-clown"><i data-lucide="skull"></i><span id="score-clown-val">0</span></span>
+        <span class="divider">|</span>
+        <span class="score-chip score-streak"><i data-lucide="flame"></i><span id="score-streak-val">0</span></span>
       </div>
     </div>
     <button class="settings-trigger" id="btn-open-settings" aria-label="Open Settings"><i data-lucide="settings"></i></button>
@@ -32,12 +34,16 @@
         <!-- Retro Header Logo -->
         <div class="terminal-banner-logo">
           <pre class="logo-ascii">
- ___ ___ _____   _____ ___ ___ __  __ ___ _  _  _   _
-| _ \ __|_   _| |_   _| __| _ \  \/  |_ _| \| |/_\ | |
-|   / _|  | |     | | | _||   / |\/| || || .` / _ \| |__
-|_|_\___| |_|     |_| |___|_|_\_|  |_|___|_|\_/_/ \_\____|
+ ___   ___   __   _____  _   _   _  _   ___   _____
+|   \ / _ \  \ \ / / _ \| | | | | || | /_\ \ / / __|
+| |) | (_) |  \ V / (_) | |_| | | __ |/ _ \ V /| _|
+|___/ \___/    |_| \___/ \___/  |_||_/_/ \_\_/ |___|
+ ___ ___    _   ___ _  _ ___ ___
+| _ ) _ \  /_\ |_ _| \| / __|__ \
+| _ \   / / _ \ | || .` \__ \ /_/
+|___/_|_\/_/ \_\___|_|\_|___/(_)
           </pre>
-          <span class="logo-subtitle">COGNITIVE RELATIONAL FRAME CHAMBER // PROTOCOL v1.2</span>
+          <span class="logo-subtitle">A RELATIONAL REASONING BRAIN GAME // PROTOCOL v1.2</span>
         </div>
 
         <!-- HERO: one clear sentence of what this is -->
@@ -56,7 +62,7 @@
             <a href="#how-it-works" class="ghost-link">How does it work? <i data-lucide="arrow-down"></i></a>
           </div>
           <div class="hero-meta">
-            <span><i data-lucide="timer"></i> 60-second rounds</span>
+            <span><i data-lucide="timer"></i> 15-second rounds</span>
             <span class="dot">·</span>
             <span><i data-lucide="target"></i> 5 puzzle types</span>
             <span class="dot">·</span>
@@ -333,10 +339,10 @@
         <!-- Actions -->
         <div class="verdict-actions">
           <button class="btn btn-action shadow-green" id="btn-recover">
-            <i data-lucide="brain"></i> TRY TO RECOVER
+            <i data-lucide="rotate-ccw"></i> PLAY AGAIN
           </button>
           <button class="btn btn-action shadow-pink" id="btn-giveup">
-            <i data-lucide="flag"></i> GIVE UP FOREVER
+            <i data-lucide="home"></i> BACK TO MENU
           </button>
         </div>
       </div>
@@ -344,11 +350,11 @@
 
   </main>
 
-  <!-- Sidebar Drawer: Torture Drawer Settings -->
+  <!-- Sidebar Drawer: Settings -->
   <aside class="sidebar-drawer" id="settings-drawer">
     <div class="drawer-header">
       <div class="drawer-title-group">
-        <h2>TORTURE SETTINGS</h2>
+        <h2>SETTINGS</h2>
         <p>PICK YOUR POISON</p>
       </div>
       <button class="drawer-close" id="btn-close-settings" aria-label="Close Settings">&times;</button>
@@ -441,23 +447,35 @@
   <!-- Review Panel Overlay (Ties in graph visualizer) -->
   <div class="review-panel-overlay" id="drawer-review" style="display: none;">
     <div class="review-panel-box">
+      <div class="review-status-banner" id="review-status">
+        <span class="review-status-icon"><i data-lucide="check"></i></span>
+        <div class="review-status-text">
+          <span class="review-status-title" id="review-status-title">CORRECT</span>
+          <span class="review-status-detail" id="review-status-detail">Logic chain validated.</span>
+        </div>
+      </div>
       <div class="review-header-title">
         <h3>COMPILATION DEDUCTION GRAPH</h3>
-        <p>Inspect paths to review logical traces</p>
+        <p>Hover nodes to trace the paths behind the answer</p>
       </div>
       <div class="review-canvas-container">
         <canvas id="visualizer-canvas"></canvas>
       </div>
-      <button class="btn btn-action" id="btn-next-review" style="width:100%; border-color:var(--primary); color:var(--primary);">
-        NEXT ROUND
-      </button>
+      <div class="review-actions">
+        <button class="btn btn-review-end" id="btn-end-session">
+          <i data-lucide="flag"></i> END SESSION
+        </button>
+        <button class="btn btn-action btn-review-next" id="btn-next-review">
+          NEXT ROUND <i data-lucide="arrow-right"></i>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Scripts -->
-  <script src="lucide.min.js?v=5"></script>
-  <script src="generator.js?v=5"></script>
-  <script src="visualizer.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="lucide.min.js?v=7"></script>
+  <script src="generator.js?v=7"></script>
+  <script src="visualizer.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

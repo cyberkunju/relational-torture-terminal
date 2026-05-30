@@ -1,5 +1,5 @@
 /**
- * RelationalTerminal Puzzle Generator
+ * Do you have brains - Puzzle Generator
  * Rooted in Relational Frame Theory (RFT)
  * Generates deterministic logic puzzles across 5 tech-themed modes.
  */
@@ -8,14 +8,14 @@ const Generator = (() => {
   // Vocabulary databases for tech modes
   const vocab = {
     network: {
-      nodes: ['Router-Alpha', 'Router-Beta', 'Router-Gamma', 'Router-Delta', 'Router-Epsilon', 'Router-Zeta', 'Router-Eta', 'Router-Theta', 'Gateway-Main', 'Edge-Cache'],
+      nodes: ['Router-Alpha', 'Router-Beta', 'Router-Gamma', 'Router-Delta', 'Router-Epsilon', 'Router-Zeta', 'Router-Eta', 'Router-Theta', 'Router-Iota', 'Router-Kappa', 'Gateway-Main', 'Edge-Cache', 'Proxy-Node'],
       relations: {
         faster: ['is faster than', 'has lower latency than', 'responds quicker than'],
         slower: ['is slower than', 'has higher latency than', 'responds slower than']
       }
     },
     git: {
-      nodes: ['feature-auth', 'feature-ui', 'hotfix-db', 'bugfix-parser', 'release-candidate', 'main-branch', 'dev-branch', 'feature-payment', 'patch-ssl'],
+      nodes: ['feature-auth', 'feature-ui', 'hotfix-db', 'bugfix-parser', 'release-candidate', 'main-branch', 'dev-branch', 'feature-payment', 'patch-ssl', 'feature-search', 'hotfix-cache', 'refactor-core'],
       relations: {
         parent: ['is branched from', 'is created directly from', 'parent commit is'],
         ancestor: ['contains commits older than', 'is ahead of', 'is downstream from'],
@@ -23,14 +23,14 @@ const Generator = (() => {
       }
     },
     dependency: {
-      nodes: ['AuthModule', 'DbConnector', 'QueryParser', 'LogManager', 'ConfigProvider', 'SslHandshaker', 'CacheStore', 'TokenValidator'],
+      nodes: ['AuthModule', 'DbConnector', 'QueryParser', 'LogManager', 'ConfigProvider', 'SslHandshaker', 'CacheStore', 'TokenValidator', 'SessionStore', 'EventBus', 'MetricsCollector', 'RetryPolicy', 'SchemaValidator'],
       relations: {
         depends: ['depends on', 'requires', 'imports'],
         conflicts: ['conflicts with', 'is incompatible with', 'cannot run alongside']
       }
     },
     inheritance: {
-      nodes: ['BaseController', 'ApiController', 'AuthController', 'QueryBuilder', 'DataRepository', 'MongoRepository', 'SqlRepository', 'ModelSchema'],
+      nodes: ['BaseController', 'ApiController', 'AuthController', 'QueryBuilder', 'DataRepository', 'MongoRepository', 'SqlRepository', 'ModelSchema', 'EntityModel', 'ServiceLayer', 'MiddlewareBase', 'ViewComponent', 'EventEmitter'],
       relations: {
         inherits: ['inherits from', 'extends', 'is a subclass of'],
         parent: ['is the parent class of', 'is overridden by', 'is the superclass of']
@@ -597,44 +597,72 @@ const Generator = (() => {
   }
 
   function negateText(text) {
-    let t = text;
-    // Perform negation swaps
-    // Latency
-    t = t.replace(/is faster than/g, "is not slower than");
-    t = t.replace(/has lower latency than/g, "does not have higher latency than");
-    t = t.replace(/responds quicker than/g, "does not respond slower than");
-    t = t.replace(/is slower than/g, "is not faster than");
-    t = t.replace(/has higher latency than/g, "does not have lower latency than");
-    t = t.replace(/responds slower than/g, "does not respond quicker than");
+    // Negation mode rephrases statements as double-negatives that PRESERVE both
+    // truth value and direction, so the puzzle stays solvable. Only phrases with
+    // a clean logical opposite are rewritten; everything else is left untouched.
+    //
+    // Critical: all swaps are applied in a SINGLE left-to-right pass via one
+    // combined regex. This guarantees an inserted word (e.g. "LOW (0)") is never
+    // re-matched by a later rule, which is what produced the old "not not" bug.
+    const swaps = [
+      // Inheritance conclusion (longest first)
+      ['does NOT inherit properties and methods from', 'lacks the properties and methods of'],
+      ['inherits properties and methods from', 'does not lack the properties and methods of'],
+      // Git conclusion
+      ['does NOT contain changes from', 'is missing some changes from'],
+      ['contains all changes from', 'is not missing any changes from'],
+      // Git premises (clean directional opposites only)
+      ['is integrated before', 'is not integrated after'],
+      ['is upstream from', 'is not downstream from'],
+      // Network latency (faster/slower are exact opposites in a strict order)
+      ['has lower latency than', 'does not have higher latency than'],
+      ['has higher latency than', 'does not have lower latency than'],
+      ['responds quicker than', 'does not respond slower than'],
+      ['responds slower than', 'does not respond quicker than'],
+      ['is faster than', 'is not slower than'],
+      ['is slower than', 'is not faster than'],
+      // Dependency (conflict/compatible and depend/independent are opposites)
+      ['cannot run alongside', 'is not safe to run alongside'],
+      ['is incompatible with', 'is not compatible with'],
+      ['conflicts with', 'is not compatible with'],
+      ['depends on', 'is not independent of'],
+      ['requires', 'does not work without'],
+      // Logic levels (binary, exact opposites)
+      ['HIGH (1)', 'not LOW (0)'],
+      ['LOW (0)', 'not HIGH (1)']
+    ];
 
-    // Git
-    t = t.replace(/is branched from/g, "is not branched from outside");
-    t = t.replace(/contains all changes from/g, "is not missing changes from");
-    t = t.replace(/does NOT contain changes from/g, "does not contain commits from");
+    const map = {};
+    swaps.forEach(([k, v]) => { map[k] = v; });
 
-    // Dependency
-    t = t.replace(/depends on/g, "is not independent of");
-    t = t.replace(/requires/g, "does not run without");
-    t = t.replace(/conflicts with/g, "is not compatible with");
+    // Build one alternation regex, longest patterns first (array order preserved),
+    // escaping any regex-special characters in the phrases.
+    const pattern = swaps
+      .map(([k]) => k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+      .join('|');
+    const re = new RegExp(pattern, 'g');
 
-    // Inheritance
-    t = t.replace(/inherits from/g, "is not decoupled from");
-    t = t.replace(/extends/g, "does not not extend");
-    t = t.replace(/does NOT inherit/g, "does not inherit");
-
-    // Logic
-    t = t.replace(/HIGH \(1\)/g, "not LOW (0)");
-    t = t.replace(/LOW \(0\)/g, "not HIGH (1)");
-
-    return t;
+    return text.replace(re, (matched) => map[matched] || matched);
   }
 
   // Master Generate Function
   function generate(mode, numPremises, modifiers = {}) {
-    const clampedPremises = Math.max(2, Math.min(10, numPremises));
+    // Resolve the effective mode first so we can clamp against its vocabulary.
+    const validModes = ['network', 'git', 'dependency', 'inheritance', 'logic'];
+    const resolvedMode = validModes.includes(mode) ? mode : randChoice(validModes);
+
+    // Each non-logic mode needs (numPremises + 1) distinct nodes. Never request
+    // more nodes than the vocabulary holds, or names come back undefined.
+    let maxPremises = 10;
+    if (resolvedMode === 'network') maxPremises = vocab.network.nodes.length - 1;
+    else if (resolvedMode === 'git') maxPremises = vocab.git.nodes.length - 1;
+    else if (resolvedMode === 'dependency') maxPremises = vocab.dependency.nodes.length - 1;
+    else if (resolvedMode === 'inheritance') maxPremises = vocab.inheritance.nodes.length - 1;
+
+    const clampedPremises = Math.max(2, Math.min(maxPremises, numPremises));
     let basePuzzle;
-    
-    switch (mode) {
+
+    switch (resolvedMode) {
       case 'network':
         basePuzzle = generateNetworkPuzzle(clampedPremises);
         break;
@@ -649,10 +677,6 @@ const Generator = (() => {
         break;
       case 'logic':
         basePuzzle = generateLogicPuzzle(clampedPremises);
-        break;
-      default:
-        const modes = ['network', 'git', 'dependency', 'inheritance', 'logic'];
-        basePuzzle = generate(randChoice(modes), clampedPremises);
         break;
     }
 

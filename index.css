@@ -1,5 +1,5 @@
 /*
- * Relational Torture Terminal Stylesheet
+ * Do you have brains - Stylesheet
  * Minimalist Cybernetic comic HUD theme with offset solid shadows
  */
 
@@ -1387,4 +1387,103 @@ i[data-lucide]:not(:has(svg)) {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
+}
+
+/* ============================================================
+   REVIEW OVERLAY — outcome banner + actions (correct/wrong/timeout)
+   ============================================================ */
+
+.review-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
+  border: var(--border-width) solid var(--text-main);
+  background: var(--bg-color);
+}
+
+.review-status-icon {
+  font-size: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.review-status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.review-status-title {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.review-status-detail {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Outcome theming */
+.status-correct { border-color: var(--primary); box-shadow: 4px 4px 0 var(--primary); }
+.status-correct .review-status-icon, .status-correct .review-status-title { color: var(--primary); }
+
+.status-wrong { border-color: var(--accent); box-shadow: 4px 4px 0 var(--accent); }
+.status-wrong .review-status-icon, .status-wrong .review-status-title { color: var(--accent); }
+
+.status-timeout { border-color: var(--warning); box-shadow: 4px 4px 0 var(--warning); }
+.status-timeout .review-status-icon, .status-timeout .review-status-title { color: var(--warning); }
+
+/* Review action row */
+.review-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+}
+
+.btn-review-end {
+  background: var(--bg-color);
+  border: var(--border-width) solid var(--text-muted);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.btn-review-end:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-review-next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Streak chip in HUD */
+.score-streak { color: var(--warning); }
+
+@media (max-width: 520px) {
+  .review-actions { grid-template-columns: 1fr; }
+}
+
+/* Locked choice buttons (carousel mode, before the conclusion is revealed) */
+.btn-choice.btn-locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+.btn-choice.btn-locked:hover {
+  background: var(--bg-color);
+  color: var(--text-main);
 }

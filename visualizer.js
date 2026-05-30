@@ -1,11 +1,14 @@
 /**
- * RelationalTerminal Feedback Visualizer
+ * Do you have brains - Feedback Visualizer
  * Renders graph structures onto an HTML5 Canvas with retro cyber HUD aesthetics.
  */
 
 const Visualizer = (() => {
   let animationFrameId = null;
   let particles = [];
+  // Live highlight updated by the app on hover; the render loop reads this each
+  // frame so hovering actually re-traces paths (the old code re-passed a stale arg).
+  let liveHighlight = null;
 
   // Theme Colors
   const colors = {
@@ -151,6 +154,13 @@ const Visualizer = (() => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // The app updates the highlight via setHighlight(); the recursive animation
+    // loop reads the module-level value so hover re-tracing works live.
+    if (highlightedNode !== null) {
+      liveHighlight = highlightedNode;
+    }
+    const activeHighlight = liveHighlight;
 
     const width = canvas.width = canvas.parentElement.clientWidth || 600;
     const height = canvas.height = 320;
@@ -308,8 +318,8 @@ const Visualizer = (() => {
       if (!from || !to) return;
 
       // Highlight route if connected to hovered node
-      const isHighlighted = highlightedNode && 
-        (edge.from === highlightedNode || edge.to === highlightedNode);
+      const isHighlighted = activeHighlight && 
+        (edge.from === activeHighlight || edge.to === activeHighlight);
       
       if (edge.label === 'conflicts') {
         drawConflictEdge(ctx, from.x, from.y, to.x, to.y, 'CONFLICT');
@@ -348,7 +358,7 @@ const Visualizer = (() => {
       const coords = nodeCoords[node.id];
       if (!coords) return;
 
-      const isHovered = highlightedNode === node.id;
+      const isHovered = activeHighlight === node.id;
       const isSignalNode = puzzleData.mode === 'logic';
       const nodeRadiusX = 65;
       const nodeRadiusY = 22;
@@ -412,11 +422,11 @@ const Visualizer = (() => {
       ctx.restore();
     });
 
-    // Recursive animation loop
+    // Recursive animation loop — re-reads liveHighlight each frame.
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
     }
-    animationFrameId = requestAnimationFrame(() => render(canvas, puzzleData, highlightedNode));
+    animationFrameId = requestAnimationFrame(() => render(canvas, puzzleData, null));
   }
 
   function stop() {
@@ -425,6 +435,12 @@ const Visualizer = (() => {
       animationFrameId = null;
     }
     particles = [];
+    liveHighlight = null;
+  }
+
+  // Update the highlighted node from the app (called on hover).
+  function setHighlight(nodeId) {
+    liveHighlight = nodeId;
   }
 
   // Helper to detect if a click is over a node (returns node id)
@@ -505,7 +521,8 @@ const Visualizer = (() => {
   return {
     render,
     stop,
-    hitTest
+    hitTest,
+    setHighlight
   };
 })();
 

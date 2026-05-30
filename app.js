@@ -1,5 +1,5 @@
 /**
- * Relational Torture Terminal - Main Application Logic
+ * Do you have brains - Main Application Logic
  * Cybernetic comic HUD theme with offset solid shadows.
  * Handles game state, settings toggling, modifiers, Web Audio API synth, and interactive visualizer.
  */
@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const state = {
     brainScore: 0,
     clownScore: 0,
+    streak: 0,
+    bestStreak: 0,
     
     // Config options
     mode: 'network',
@@ -26,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Active round variables
     currentPuzzle: null,
     carouselIndex: 0,
+    conclusionRevealed: false,
     timerInterval: null,
     timeRemaining: 0,
     maxTime: 15, // seconds (standard)
@@ -49,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Header
     scoreBrain: document.getElementById('score-brain-val'),
     scoreClown: document.getElementById('score-clown-val'),
+    scoreStreak: document.getElementById('score-streak-val'),
     btnOpenSettings: document.getElementById('btn-open-settings'),
 
     // Screens
@@ -94,7 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Review Panel
     drawerReview: document.getElementById('drawer-review'),
     canvas: document.getElementById('visualizer-canvas'),
-    btnNextReview: document.getElementById('btn-next-review')
+    btnNextReview: document.getElementById('btn-next-review'),
+    btnEndSession: document.getElementById('btn-end-session'),
+    reviewStatus: document.getElementById('review-status'),
+    reviewStatusTitle: document.getElementById('review-status-title'),
+    reviewStatusDetail: document.getElementById('review-status-detail')
   };
 
   // Sound Synthesizer (Web Audio API)
@@ -206,7 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
       sound.click();
       syncStateFromStartScreen();
       saveSettings();
-      
+
+      // Fresh session: reset score and streak
+      state.brainScore = 0;
+      state.clownScore = 0;
+      state.streak = 0;
+      state.bestStreak = 0;
+      updateScoreHUD();
+
       els.screenStart.style.display = 'none';
       els.screenVerdict.style.display = 'none';
       els.screenGame.style.display = 'flex';
@@ -252,10 +267,22 @@ document.addEventListener('DOMContentLoaded', () => {
       startNewRound();
     });
 
-    // Fail Recovery Actions
+    // End the session from the review overlay -> show summary verdict
+    if (els.btnEndSession) {
+      els.btnEndSession.addEventListener('click', () => {
+        sound.click();
+        endSession();
+      });
+    }
+
+    // Verdict screen: start a fresh session (reset score) and play again
     els.btnRecover.addEventListener('click', () => {
       sound.click();
-      // Keep score but allow user to try again
+      state.brainScore = 0;
+      state.clownScore = 0;
+      state.streak = 0;
+      state.bestStreak = 0;
+      updateScoreHUD();
       els.screenVerdict.style.display = 'none';
       els.screenGame.style.display = 'flex';
       startNewRound();
@@ -263,9 +290,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     els.btnGiveUp.addEventListener('click', () => {
       sound.click();
-      // Hard reset
+      // Hard reset back to the landing page
       state.brainScore = 0;
       state.clownScore = 0;
+      state.streak = 0;
+      state.bestStreak = 0;
       updateScoreHUD();
       
       els.screenVerdict.style.display = 'none';
@@ -285,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const nodeHit = Visualizer.hitTest(els.canvas, state.currentPuzzle, mouseX, mouseY);
       if (nodeHit !== state.hoveredNodeId) {
         state.hoveredNodeId = nodeHit;
+        Visualizer.setHighlight(nodeHit);
         if (nodeHit) {
           sound.click();
         }
@@ -293,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     els.canvas.addEventListener('mouseleave', () => {
       state.hoveredNodeId = null;
+      Visualizer.setHighlight(null);
     });
 
     // Keyboard Hotkey controls
@@ -306,15 +337,24 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // If playing the game
       if (els.screenGame.style.display === 'flex' && !state.answered) {
-        if (key === 'arrowleft' || key === 't' || key === '1') {
-          evaluateAnswer(true);
-        } else if (key === 'arrowright' || key === 'f' || key === '2') {
-          evaluateAnswer(false);
-        } else if (key === ' ' || key === 'arrowdown') {
+        // In carousel mode, premises must be revealed before answering is allowed.
+        const carouselLocked = state.presentationMode === 'carousel' &&
+          state.carouselIndex < (state.currentPuzzle ? state.currentPuzzle.premises.length - 1 : 0);
+
+        if (key === ' ' || key === 'arrowdown') {
           e.preventDefault();
           if (state.presentationMode === 'carousel') {
             navigateCarouselNext();
           }
+        } else if (carouselLocked) {
+          // Ignore TRUE/FALSE keys until the full chain has been shown.
+          return;
+        } else if (key === 'arrowright' || key === 't' || key === '1') {
+          // TRUE button sits on the right
+          evaluateAnswer(true);
+        } else if (key === 'arrowleft' || key === 'f' || key === '2') {
+          // FALSE button sits on the left
+          evaluateAnswer(false);
         }
       } else if (els.drawerReview.style.display === 'flex') {
         if (key === ' ' || key === 'enter') {
@@ -424,29 +464,37 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateScoreHUD() {
     els.scoreBrain.textContent = `${state.brainScore}`;
     els.scoreClown.textContent = `${state.clownScore}`;
+    if (els.scoreStreak) els.scoreStreak.textContent = `${state.streak}`;
   }
 
   // Stroop Mode color interference wrapper
   function applyStroopColoring(text) {
     if (!state.modifiers.stroop) return text;
-    
+
     let result = text;
-    // Target keywords to apply mismatched neon coloring
+    // Target keywords to apply mismatched neon coloring. Includes negation-mode
+    // phrasings so Stroop still bites when Negation is also active.
     const keywords = [
-      'faster than', 'slower than', 'lower latency', 'higher latency',
-      'contains all changes', 'does NOT contain changes', 'depends on',
-      'conflicts with', 'inherits from', 'extends', 'HIGH (1)', 'LOW (0)',
-      'not LOW (0)', 'not HIGH (1)'
+      'is not slower than', 'is not faster than', 'is faster than', 'is slower than',
+      'does not have higher latency than', 'does not have lower latency than',
+      'has lower latency than', 'has higher latency than',
+      'is not missing any changes from', 'is missing some changes from',
+      'contains all changes from', 'does NOT contain changes from',
+      'is not independent of', 'depends on', 'is not compatible with', 'conflicts with',
+      'does not lack the properties and methods of', 'lacks the properties and methods of',
+      'inherits properties and methods from',
+      'not LOW (0)', 'not HIGH (1)', 'HIGH (1)', 'LOW (0)'
     ];
 
     const colorsPool = ['color-p-green', 'color-p-pink', 'color-p-cyan', 'color-p-white'];
-    
-    // Sort words descending in length to prevent inner substring replacements
-    keywords.sort((a,b) => b.length - a.length);
+
+    // Longest phrases first so we never color a fragment of a longer phrase.
+    keywords.sort((a, b) => b.length - a.length);
 
     keywords.forEach(word => {
-      const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      // Assign a random mismatch color
+      // Escape regex-special characters (parentheses in "HIGH (1)" etc.)
+      const escaped = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(escaped, 'g');
       const colorClass = colorsPool[Math.floor(Math.random() * colorsPool.length)];
       result = result.replace(regex, `<span class="${colorClass}">${word}</span>`);
     });
@@ -460,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.hoveredNodeId = null;
     state.answered = false;
     state.carouselIndex = 0;
+    state.conclusionRevealed = false;
 
     // Generate puzzle mapping modifiers
     state.currentPuzzle = Generator.generate(state.mode, state.numPremises, {
@@ -519,6 +568,8 @@ document.addEventListener('DOMContentLoaded', () => {
     els.gamePremises.innerHTML = '';
     
     if (state.presentationMode === 'standard') {
+      // All premises visible at once -> answering allowed immediately.
+      state.conclusionRevealed = true;
       // Add all premises with cycling icon markers
       pz.premises.forEach((premiseText, i) => {
         const item = document.createElement('div');
@@ -532,10 +583,21 @@ document.addEventListener('DOMContentLoaded', () => {
       // Set question
       els.gameQuestion.innerHTML = applyStroopColoring(pz.conclusion);
     } else {
-      // Carousel Mode initialization
+      // Carousel mode -> conclusion hidden until the chain is stepped through.
+      state.conclusionRevealed = false;
       showCarouselPremise(0);
     }
+    updateChoiceAvailability();
     renderIcons();
+  }
+
+  // Disable TRUE/FALSE until the conclusion is on screen (carousel mode).
+  function updateChoiceAvailability() {
+    const ready = state.conclusionRevealed;
+    [els.btnChoiceTrue, els.btnChoiceFalse].forEach(btn => {
+      btn.disabled = !ready;
+      btn.classList.toggle('btn-locked', !ready);
+    });
   }
 
   function showCarouselPremise(idx) {
@@ -566,8 +628,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextIdx = state.carouselIndex + 1;
     
     if (nextIdx > maxIdx) {
-      // Reveal the question statement
+      // Reveal the question statement and unlock answering.
       els.gameQuestion.innerHTML = applyStroopColoring(state.currentPuzzle.conclusion);
+      state.conclusionRevealed = true;
+      updateChoiceAvailability();
     } else {
       showCarouselPremise(nextIdx);
     }
@@ -576,6 +640,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Answer Evaluation
   function evaluateAnswer(userChoice) {
     if (state.answered) return;
+    // In carousel mode, block answers until the conclusion has been revealed.
+    if (!state.conclusionRevealed) return;
     state.answered = true;
 
     if (state.timerInterval) {
@@ -583,77 +649,116 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const isCorrect = userChoice === state.currentPuzzle.correctAnswer;
-    
+
     if (isCorrect) {
       state.brainScore++;
+      state.streak++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       updateScoreHUD();
       sound.correct();
-      
-      // Reveal diagram reviewer
-      revealReviewOverlay();
+      revealReviewOverlay('correct');
     } else {
       state.clownScore++;
+      state.streak = 0;
       updateScoreHUD();
       sound.wrong();
-      
-      // Show failure verdict card
-      triggerFailureVerdict();
+      revealReviewOverlay('wrong');
     }
   }
 
   function handleTimeoutFail() {
+    if (state.answered) return;
     state.answered = true;
     state.clownScore++;
+    state.streak = 0;
     updateScoreHUD();
     sound.wrong();
-    
-    triggerFailureVerdict("SYSTEM TIMEOUT - COGNITIVE BUFFER FLUSHED");
+
+    revealReviewOverlay('timeout');
   }
 
-  function revealReviewOverlay() {
+  // Human-readable statement of the actual correct answer for this puzzle.
+  function correctAnswerLabel() {
+    return state.currentPuzzle.correctAnswer ? 'TRUE' : 'FALSE';
+  }
+
+  function revealReviewOverlay(outcome) {
+    const banner = els.reviewStatus;
+    const title = els.reviewStatusTitle;
+    const detail = els.reviewStatusDetail;
+
+    // Reset outcome classes
+    banner.classList.remove('status-correct', 'status-wrong', 'status-timeout');
+
+    if (outcome === 'correct') {
+      banner.classList.add('status-correct');
+      banner.innerHTML = `<span class="review-status-icon"><i data-lucide="circle-check-big"></i></span>` +
+        `<div class="review-status-text">` +
+        `<span class="review-status-title">CORRECT — STREAK ${state.streak}</span>` +
+        `<span class="review-status-detail">Logic chain validated. The answer was ${correctAnswerLabel()}.</span>` +
+        `</div>`;
+    } else if (outcome === 'wrong') {
+      banner.classList.add('status-wrong');
+      banner.innerHTML = `<span class="review-status-icon"><i data-lucide="circle-x"></i></span>` +
+        `<div class="review-status-text">` +
+        `<span class="review-status-title">WRONG</span>` +
+        `<span class="review-status-detail">The correct answer was ${correctAnswerLabel()}. Trace the graph below to see why.</span>` +
+        `</div>`;
+    } else {
+      banner.classList.add('status-timeout');
+      banner.innerHTML = `<span class="review-status-icon"><i data-lucide="timer-off"></i></span>` +
+        `<div class="review-status-text">` +
+        `<span class="review-status-title">TIME'S UP</span>` +
+        `<span class="review-status-detail">Cognitive buffer flushed. The answer was ${correctAnswerLabel()}.</span>` +
+        `</div>`;
+    }
+
     els.drawerReview.style.display = 'flex';
+    renderIcons();
     Visualizer.render(els.canvas, state.currentPuzzle);
   }
 
-  function triggerFailureVerdict(customMessage = null) {
+  function endSession() {
+    els.drawerReview.style.display = 'none';
+    triggerVerdictSummary();
+  }
+
+  function triggerVerdictSummary() {
     els.screenGame.style.display = 'none';
     els.screenVerdict.style.display = 'flex';
 
-    // Calculate accuracy percentage
+    // Calculate accuracy percentage across the whole session
     const total = state.brainScore + state.clownScore;
     const efficiency = total > 0 ? Math.round((state.brainScore / total) * 100) : 0;
-    
+
     els.verdictEfficiency.textContent = `${efficiency}%`;
 
-    // Verdict rankings
+    // Verdict rankings based on full-session efficiency
     let verdict = 'SMOOTH BRAIN';
     let verdictIcon = 'skull';
     let quote = '"My pet rock scored higher than you. Do better."';
-    
-    if (customMessage) {
-      quote = customMessage;
-    } else {
-      if (efficiency >= 90) {
-        verdict = 'SYNTACTIC GOD';
-        verdictIcon = 'zap';
-        quote = '"Absolute logical transcendence. System fully optimized. Proceed with extreme arrogance."';
-      } else if (efficiency >= 70) {
-        verdict = 'GIGA BRAIN';
-        verdictIcon = 'brain';
-        quote = '"Highly efficient logical routing detected. Good compilation."';
-      } else if (efficiency >= 40) {
-        verdict = 'AVERAGE COMPILER';
-        verdictIcon = 'settings';
-        quote = '"Not terrible. But you won\'t replace ChatGPT anytime soon."';
-      } else {
-        verdict = 'SMOOTH BRAIN';
-        verdictIcon = 'skull';
-        quote = '"My pet rock scored higher than you. Do better."';
-      }
+
+    if (total === 0) {
+      verdict = 'NO DATA';
+      verdictIcon = 'circle-help';
+      quote = '"You bailed before answering anything. Bold strategy."';
+    } else if (efficiency >= 90) {
+      verdict = 'SYNTACTIC GOD';
+      verdictIcon = 'zap';
+      quote = '"Absolute logical transcendence. System fully optimized. Proceed with extreme arrogance."';
+    } else if (efficiency >= 70) {
+      verdict = 'GIGA BRAIN';
+      verdictIcon = 'brain';
+      quote = '"Highly efficient logical routing detected. Good compilation."';
+    } else if (efficiency >= 40) {
+      verdict = 'AVERAGE COMPILER';
+      verdictIcon = 'settings';
+      quote = '"Not terrible. But you won\'t replace ChatGPT anytime soon."';
     }
 
     els.verdictTitle.innerHTML = `FINAL VERDICT: ${verdict} <i data-lucide="${verdictIcon}"></i>`;
-    els.verdictQuote.textContent = quote;
+    els.verdictQuote.textContent =
+      `${quote}  —  ${state.brainScore} correct / ${state.clownScore} wrong · best streak ${state.bestStreak}`;
     renderIcons();
   }
 
