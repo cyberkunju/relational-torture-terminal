@@ -306,10 +306,9 @@ document.addEventListener('DOMContentLoaded', () => {
     els.canvas.addEventListener('mousemove', (e) => {
       if (!state.currentPuzzle || !state.answered) return;
       const rect = els.canvas.getBoundingClientRect();
-      const scaleX = els.canvas.width / rect.width;
-      const scaleY = els.canvas.height / rect.height;
-      const mouseX = (e.clientX - rect.left) * scaleX;
-      const mouseY = (e.clientY - rect.top) * scaleY;
+      // hitTest works in CSS-pixel space, so use coords relative to the element.
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
       const nodeHit = Visualizer.hitTest(els.canvas, state.currentPuzzle, mouseX, mouseY);
       if (nodeHit !== state.hoveredNodeId) {
@@ -325,6 +324,20 @@ document.addEventListener('DOMContentLoaded', () => {
       state.hoveredNodeId = null;
       Visualizer.setHighlight(null);
     });
+
+    // Touch support: tap a node to trace its paths on mobile.
+    els.canvas.addEventListener('touchstart', (e) => {
+      if (!state.currentPuzzle || !state.answered) return;
+      const touch = e.touches[0];
+      if (!touch) return;
+      const rect = els.canvas.getBoundingClientRect();
+      const mouseX = touch.clientX - rect.left;
+      const mouseY = touch.clientY - rect.top;
+      const nodeHit = Visualizer.hitTest(els.canvas, state.currentPuzzle, mouseX, mouseY);
+      state.hoveredNodeId = nodeHit;
+      Visualizer.setHighlight(nodeHit);
+      if (nodeHit) sound.click();
+    }, { passive: true });
 
     // Keyboard Hotkey controls
     document.addEventListener('keydown', (e) => {

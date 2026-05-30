@@ -23,6 +23,32 @@
   
   --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-fast: 0.1s linear;
+
+  /* Fluid type scale — viewport-aware, clamped so it never gets too small or
+     too large. Used everywhere so the whole UI scales smoothly on any screen. */
+  --fs-xs:  clamp(0.68rem, 0.62rem + 0.30vw, 0.80rem);
+  --fs-sm:  clamp(0.80rem, 0.72rem + 0.40vw, 0.95rem);
+  --fs-base:clamp(0.92rem, 0.84rem + 0.45vw, 1.08rem);
+  --fs-md:  clamp(1.05rem, 0.95rem + 0.60vw, 1.30rem);
+  --fs-lg:  clamp(1.30rem, 1.05rem + 1.20vw, 1.90rem);
+  --fs-xl:  clamp(1.70rem, 1.25rem + 2.20vw, 2.80rem);
+  --fs-2xl: clamp(2.10rem, 1.40rem + 3.40vw, 3.60rem);
+
+  /* Fluid spacing rhythm */
+  --space-section: clamp(2.2rem, 1.4rem + 3vw, 3.5rem);
+  --space-card:    clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
+  --gap-grid:      clamp(0.9rem, 0.6rem + 1vw, 1.5rem);
+
+  /* Shared content width */
+  --content-max: 1100px;
+}
+
+/* Honor reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 /* Base defaults */
@@ -36,12 +62,17 @@ body {
   background-color: var(--bg-color);
   color: var(--text-main);
   font-family: var(--font-sans);
+  font-size: var(--fs-base);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
   position: relative;
+  -webkit-text-size-adjust: 100%;
 }
+
+img, svg, canvas { max-width: 100%; }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
@@ -63,30 +94,35 @@ body {
 .torture-header {
   background: var(--bg-color);
   border-bottom: 2px solid var(--text-main);
-  padding: 0.8rem 1.5rem;
+  padding: clamp(0.6rem, 0.4rem + 0.6vw, 0.9rem) clamp(0.9rem, 0.5rem + 2vw, 1.5rem);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   z-index: 100;
+  position: sticky;
+  top: 0;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: clamp(0.6rem, 0.3rem + 1.2vw, 1rem);
+  min-width: 0;
 }
 
 .terminal-icon {
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 0.9rem + 0.6vw, 1.4rem);
 }
 
 .score-display {
   font-family: var(--font-mono);
-  font-size: 1.3rem;
+  font-size: clamp(1rem, 0.8rem + 0.9vw, 1.3rem);
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: clamp(0.4rem, 0.2rem + 0.6vw, 0.6rem);
+  white-space: nowrap;
 }
 
 .score-display .divider {
@@ -97,10 +133,11 @@ body {
   background: transparent;
   border: none;
   color: var(--text-main);
-  font-size: 1.4rem;
+  font-size: clamp(1.2rem, 1rem + 0.6vw, 1.4rem);
   cursor: pointer;
   outline: none;
   transition: transform var(--transition-normal);
+  flex-shrink: 0;
 }
 
 .settings-trigger:hover {
@@ -114,15 +151,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.5rem;
+  padding: clamp(1.25rem, 0.8rem + 2vw, 2.5rem) clamp(1rem, 0.5rem + 2.5vw, 1.5rem);
   width: 100%;
-  max-width: 1040px; /* Expanded for landing page grid layout */
+  max-width: var(--content-max);
   margin: 0 auto;
 }
 
 /* Play and verdict screens keep narrower, centered width for readability */
 #screen-game, #screen-verdict {
-  max-width: 650px;
+  max-width: 680px;
   margin: 0 auto;
   width: 100%;
 }
@@ -144,9 +181,9 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-section);
   border-bottom: 2px dashed #222;
-  padding-bottom: 2rem;
+  padding-bottom: var(--space-section);
 }
 
 .logo-ascii {
@@ -154,34 +191,24 @@ body {
   text-shadow: 0 0 10px rgba(0, 255, 0, 0.35);
   font-family: var(--font-mono);
   font-weight: bold;
-  font-size: 0.75rem;
+  /* Scale ASCII art to viewport so the chars always fit one screen width.
+     ch-based clamp keeps the art crisp without horizontal scrolling. */
+  font-size: clamp(0.34rem, 1.35vw, 0.85rem);
   line-height: 1.15;
   letter-spacing: -0.5px;
-  margin-bottom: 0.8rem;
-  overflow: hidden;
+  margin-bottom: 1rem;
   max-width: 100%;
   white-space: pre;
-}
-
-@media (max-width: 768px) {
-  .logo-ascii {
-    font-size: 0.5rem; /* Scale down ASCII art on tablet */
-  }
-}
-
-@media (max-width: 576px) {
-  .logo-ascii {
-    font-size: 0.4rem; /* Scale down ASCII art on mobile */
-  }
+  overflow: hidden;
 }
 
 .logo-subtitle {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.05);
   border: 1.5px solid var(--text-main);
-  padding: 0.3rem 0.8rem;
+  padding: 0.35rem 0.8rem;
   letter-spacing: 1px;
 }
 
@@ -249,7 +276,7 @@ body {
 }
 
 .config-title-header h2 {
-  font-size: 1.5rem;
+  font-size: var(--fs-lg);
   font-weight: 900;
   letter-spacing: 0.5px;
 }
@@ -258,7 +285,7 @@ body {
 .intro-container {
   display: flex;
   flex-direction: column;
-  gap: 3.5rem;
+  gap: var(--space-section);
 }
 
 .status-heading {
@@ -269,20 +296,21 @@ body {
 
 .status-heading .accent-bar {
   width: 6px;
-  height: 50px;
+  height: clamp(38px, 6vw, 50px);
   background-color: var(--primary);
   box-shadow: 0 0 10px var(--primary);
+  flex-shrink: 0;
 }
 
 .status-heading h1 {
-  font-size: 2.2rem;
+  font-size: var(--fs-xl);
   font-weight: 900;
   font-style: italic;
   letter-spacing: 1px;
 }
 
 .intro-text {
-  font-size: 1.05rem;
+  font-size: var(--fs-md);
   color: var(--text-muted);
   line-height: 1.6;
 }
@@ -297,11 +325,11 @@ body {
 .modifier-card {
   background: var(--panel-bg);
   border: var(--border-width) solid var(--text-main);
-  padding: 1.2rem;
+  padding: var(--space-card);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1.5rem;
+  gap: clamp(0.8rem, 0.4rem + 1.6vw, 1.5rem);
   transition: transform var(--transition-fast);
 }
 
@@ -368,9 +396,9 @@ body {
   background: var(--bg-color);
   border: var(--border-width) solid var(--text-main);
   color: var(--text-main);
-  padding: 1.1rem;
+  padding: clamp(0.9rem, 0.6rem + 1.4vw, 1.1rem);
   font-family: var(--font-sans);
-  font-size: 1.1rem;
+  font-size: var(--fs-base);
   font-weight: 900;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -419,23 +447,25 @@ body {
 .game-console {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: clamp(1.25rem, 0.8rem + 2vw, 2rem);
 }
 
 .puzzle-premises {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: clamp(0.9rem, 0.5rem + 1.8vw, 1.5rem);
 }
 
 .premise-item {
   font-family: var(--font-sans);
-  font-size: 1.8rem;
+  font-size: clamp(1.15rem, 0.85rem + 1.8vw, 1.8rem);
   font-weight: 800;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
+  line-height: 1.25;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: clamp(0.5rem, 0.3rem + 0.8vw, 1rem);
+  overflow-wrap: anywhere;
 }
 
 .console-divider {
@@ -452,32 +482,34 @@ body {
 
 .question-tag {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--primary);
   letter-spacing: 1.5px;
 }
 
 .question-statement {
-  font-size: 2.1rem;
+  font-size: clamp(1.35rem, 0.95rem + 2.2vw, 2.1rem);
   font-weight: 900;
   font-style: italic;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .action-buttons-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
+  gap: clamp(0.75rem, 0.4rem + 1.6vw, 1.5rem);
+  margin-top: clamp(0.75rem, 0.4rem + 1.6vw, 1.5rem);
 }
 
 .btn-choice {
   background: var(--bg-color);
   border: var(--border-width) solid var(--text-main);
   color: var(--text-main);
-  padding: 1.5rem;
+  padding: clamp(1rem, 0.6rem + 2vw, 1.5rem);
   font-family: var(--font-sans);
-  font-size: 1.15rem;
+  font-size: clamp(1rem, 0.85rem + 0.7vw, 1.15rem);
   font-weight: 900;
   text-transform: uppercase;
   cursor: pointer;
@@ -512,17 +544,18 @@ body {
 }
 
 .verdict-grade {
-  font-size: 2.2rem;
+  font-size: var(--fs-xl);
   font-weight: 900;
   color: var(--accent);
   text-transform: uppercase;
+  line-height: 1.15;
 }
 
 .efficiency-badge-wrapper {
   background: var(--bg-color);
   border: var(--border-width) solid var(--text-main);
   transform: rotate(-3deg);
-  padding: 1.5rem 3rem;
+  padding: clamp(1rem, 0.6rem + 2vw, 1.5rem) clamp(2rem, 1rem + 5vw, 3rem);
   box-shadow: 5px 5px 0px var(--text-main);
 }
 
@@ -533,7 +566,7 @@ body {
 }
 
 .efficiency-num {
-  font-size: 3rem;
+  font-size: var(--fs-2xl);
   font-weight: 900;
   letter-spacing: 1px;
 }
@@ -579,13 +612,13 @@ body {
 .sidebar-drawer {
   position: fixed;
   top: 0; right: 0; bottom: 0;
-  width: 320px;
+  width: min(340px, 88vw);
   background-color: #0b0c0d;
   border-left: var(--border-width) solid var(--text-main);
   z-index: 500;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
+  transform: translateX(101%);
   transition: transform var(--transition-normal);
 }
 
@@ -763,50 +796,53 @@ body {
 /* Post-answer review overlay drawer */
 .review-panel-overlay {
   position: fixed;
-  top: 0; left: 0; bottom: 0; right: 0;
+  inset: 0;
   background: rgba(0,0,0,0.85);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: clamp(0.75rem, 0.4rem + 2vw, 1.5rem);
 }
 
 .review-panel-box {
   background: var(--panel-bg);
   border: var(--border-width) solid var(--text-main);
-  padding: 1.5rem;
+  padding: clamp(1rem, 0.6rem + 2vw, 1.5rem);
   width: 100%;
-  max-width: 600px;
+  max-width: 620px;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: clamp(0.8rem, 0.5rem + 1.4vw, 1.2rem);
   box-shadow: 8px 8px 0px var(--secondary);
 }
 
 .review-header-title h3 {
-  font-size: 1.15rem;
+  font-size: var(--fs-md);
   font-weight: 900;
   color: var(--secondary);
 }
 
 .review-header-title p {
-  font-size: 0.8rem;
+  font-size: var(--fs-xs);
   color: var(--text-muted);
 }
 
 .review-canvas-container {
   border: 1.5px solid var(--text-muted);
   background: #050505;
-  height: 280px;
+  width: 100%;
+  height: clamp(240px, 42vh, 360px);
   position: relative;
   overflow: hidden;
 }
 
-canvas {
+canvas#visualizer-canvas {
   display: block;
   width: 100%;
-  height: 280px;
+  height: 100%;
 }
 
 /* Stroop Colors Styles (applied via JS) */
@@ -841,7 +877,7 @@ canvas {
 }
 
 .block-heading {
-  font-size: 1.9rem;
+  font-size: var(--fs-lg);
   font-weight: 900;
   letter-spacing: 0.5px;
   line-height: 1.1;
@@ -849,7 +885,7 @@ canvas {
 }
 
 .block-sub {
-  font-size: 1rem;
+  font-size: var(--fs-base);
   color: var(--text-muted);
   line-height: 1.6;
   margin-top: 0.6rem;
@@ -873,7 +909,7 @@ canvas {
 }
 
 .hero-block .status-heading h1 {
-  font-size: 2.7rem;
+  font-size: var(--fs-2xl);
   line-height: 1.05;
   font-style: normal;
 }
@@ -965,7 +1001,7 @@ canvas {
 }
 
 .example-q {
-  font-size: 1.3rem;
+  font-size: var(--fs-md);
   font-weight: 900;
   font-style: italic;
   color: var(--secondary);
@@ -1192,20 +1228,64 @@ canvas {
 }
 
 /* ---------- RESPONSIVE ---------- */
-@media (max-width: 860px) {
-  .why-grid, .steps-row, .modes-grid { grid-template-columns: 1fr 1fr; }
+
+/* Tablet / small laptop: drop 3-col grids to 2-col */
+@media (max-width: 880px) {
+  .why-grid,
+  .steps-row,
+  .modes-grid { grid-template-columns: repeat(2, 1fr); }
   .benefits-grid { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 600px) {
-  .intro-container { gap: 2.6rem; }
-  .hero-block .status-heading h1 { font-size: 2rem; }
-  .block-heading { font-size: 1.5rem; }
-  .why-grid, .steps-row, .modes-grid { grid-template-columns: 1fr; }
+/* Large phone / small tablet */
+@media (max-width: 640px) {
+  .intro-container { gap: var(--space-section); }
+  .why-grid,
+  .steps-row,
+  .modes-grid { grid-template-columns: 1fr; }
   .example-panel { grid-template-columns: 1fr; text-align: left; }
   .example-arrow { transform: rotate(90deg); }
   .hero-launch { width: 100%; }
-  .hero-cta-row { gap: 1rem; }
+  .hero-cta-row { gap: 1rem; align-items: stretch; }
+  .hero-cta-row .ghost-link { justify-content: center; }
+
+  /* Hero metadata stacks for readability */
+  .hero-meta { gap: 0.4rem 0.8rem; }
+
+  /* Stop the verdict badge from rotating off-edge on tiny screens */
+  .efficiency-badge-wrapper { padding: 1rem 1.6rem; }
+}
+
+/* Phones */
+@media (max-width: 460px) {
+  .score-display { font-size: 1rem; }
+  /* Premises/question already fluid; keep buttons comfy and tappable */
+  .action-buttons-grid { gap: 0.7rem; }
+  .btn-choice { padding: 1.1rem 0.5rem; }
+  .review-actions { grid-template-columns: 1fr; }
+  .verdict-actions { gap: 0.9rem; }
+  /* Offset shadows shrink so they don't cause horizontal overflow */
+  .btn-action { box-shadow: 4px 4px 0 var(--primary); }
+  .review-panel-box { box-shadow: 5px 5px 0 var(--secondary); }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+  .hero-meta { font-size: 0.72rem; }
+  .efficiency-num { font-size: 2.4rem; }
+}
+
+/* Short landscape screens: tighten vertical rhythm so the play screen fits */
+@media (max-height: 560px) and (orientation: landscape) {
+  .viewport-container { align-items: flex-start; }
+  .intro-container { gap: 1.8rem; }
+}
+
+/* Touch devices: remove hover transforms that feel laggy / sticky on tap */
+@media (hover: none) {
+  .why-card:hover,
+  .mode-card:hover,
+  .info-card:hover { transform: none; }
 }
 
 /* ============================================================
